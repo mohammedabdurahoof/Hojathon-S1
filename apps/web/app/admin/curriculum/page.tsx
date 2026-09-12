@@ -12,14 +12,7 @@ interface Concept {
   grade: string;
 }
 
-const INITIAL_CONCEPTS: Concept[] = [
-  { code: 'MATH-ADD-01', name: 'Addition', topic: 'Arithmetic', prerequisite: null, grade: 'Grade 4' },
-  { code: 'MATH-SUB-01', name: 'Subtraction', topic: 'Arithmetic', prerequisite: 'MATH-ADD-01', grade: 'Grade 4' },
-  { code: 'MATH-MULT-01', name: 'Multiplication', topic: 'Arithmetic', prerequisite: 'MATH-ADD-01', grade: 'Grade 5' },
-  { code: 'MATH-DIV-01', name: 'Division', topic: 'Arithmetic', prerequisite: 'MATH-MULT-01', grade: 'Grade 6' },
-  { code: 'MATH-FRAC-01', name: 'Fractions', topic: 'Fractions', prerequisite: 'MATH-DIV-01', grade: 'Grade 6' },
-  { code: 'MATH-DEC-01', name: 'Decimals', topic: 'Fractions', prerequisite: 'MATH-FRAC-01', grade: 'Grade 7' },
-];
+const INITIAL_CONCEPTS: Concept[] = [];
 
 const TOPICS = ['Arithmetic', 'Fractions', 'Algebra', 'Geometry'];
 const GRADES = ['Grade 4', 'Grade 5', 'Grade 6', 'Grade 7', 'Grade 8'];
@@ -178,6 +171,15 @@ export default function AdminCurriculumPage() {
                       </td>
                     </tr>
                   ))}
+                  {concepts.length === 0 && (
+                    <tr>
+                      <td colSpan={6} className="p-12 text-center text-slate-400 space-y-2">
+                        <div className="text-3xl">🗂️</div>
+                        <div className="font-semibold text-slate-300">No concepts defined in curriculum</div>
+                        <p className="text-xs text-slate-500">Click &quot;＋ Add Concept&quot; above to define your first concept node.</p>
+                      </td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
             </div>
@@ -187,35 +189,43 @@ export default function AdminCurriculumPage() {
           {activeTab === 'GRAPH' && (
             <div className="p-6 border border-slate-800 bg-slate-900/60 rounded-2xl">
               <h3 className="text-sm font-bold text-white mb-5">Prerequisite Dependency Graph — Visual View</h3>
-              <div className="space-y-4">
-                {rootNodes.map((rootNode) => {
-                  const renderNode = (node: Concept, depth: number): React.ReactNode => {
-                    const children = getChildren(node.code);
-                    return (
-                      <div key={node.code} className="space-y-2">
-                        <div
-                          style={{ marginLeft: depth * 32 }}
-                          className="p-4 border border-slate-800 bg-slate-800/40 rounded-xl flex items-center justify-between hover:bg-slate-800/70 transition"
-                        >
-                          <div className="flex items-center space-x-3">
-                            {depth > 0 && <span className="text-slate-600 text-xs">└─</span>}
-                            <div>
-                              <div className="font-mono text-[10px] text-indigo-400">{node.code}</div>
-                              <div className="text-sm font-bold text-white">{node.name}</div>
-                              <div className="text-[10px] text-slate-400">{node.topic} • {node.grade}</div>
+              {concepts.length === 0 ? (
+                <div className="p-12 text-center text-slate-400 space-y-2">
+                  <div className="text-3xl">🌳</div>
+                  <div className="font-semibold text-slate-300">Prerequisite Graph is Empty</div>
+                  <p className="text-xs text-slate-500">Add concept nodes to generate the visual dependency tree.</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {rootNodes.map((rootNode) => {
+                    const renderNode = (node: Concept, depth: number): React.ReactNode => {
+                      const children = getChildren(node.code);
+                      return (
+                        <div key={node.code} className="space-y-2">
+                          <div
+                            style={{ marginLeft: depth * 32 }}
+                            className="p-4 border border-slate-800 bg-slate-800/40 rounded-xl flex items-center justify-between hover:bg-slate-800/70 transition"
+                          >
+                            <div className="flex items-center space-x-3">
+                              {depth > 0 && <span className="text-slate-600 text-xs">└─</span>}
+                              <div>
+                                <div className="font-mono text-[10px] text-indigo-400">{node.code}</div>
+                                <div className="text-sm font-bold text-white">{node.name}</div>
+                                <div className="text-[10px] text-slate-400">{node.topic} • {node.grade}</div>
+                              </div>
                             </div>
+                            {children.length > 0 && (
+                              <span className="text-[10px] text-slate-500">{children.length} dependent concept{children.length > 1 ? 's' : ''}</span>
+                            )}
                           </div>
-                          {children.length > 0 && (
-                            <span className="text-[10px] text-slate-500">{children.length} dependent concept{children.length > 1 ? 's' : ''}</span>
-                          )}
+                          {children.map((child) => renderNode(child, depth + 1))}
                         </div>
-                        {children.map((child) => renderNode(child, depth + 1))}
-                      </div>
-                    );
-                  };
-                  return renderNode(rootNode, 0);
-                })}
-              </div>
+                      );
+                    };
+                    return renderNode(rootNode, 0);
+                  })}
+                </div>
+              )}
             </div>
           )}
         </div>

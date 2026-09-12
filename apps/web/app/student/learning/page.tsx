@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { AuthGuard } from '@/components/auth/AuthGuard';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 
@@ -26,31 +26,41 @@ export default function StudentLearningPage() {
     },
   ]);
   const [inputQuery, setInputQuery] = useState<string>('');
+  const chatEndRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [chatMessages, isAiDrawerOpen]);
 
   const handleSendMessage = (textToSend?: string) => {
     const query = textToSend || inputQuery;
     if (!query.trim()) return;
 
-    const newMsg: ChatMessage = { sender: 'USER', text: query, timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) };
+    const formattedTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const newMsg: ChatMessage = { sender: 'USER', text: query.trim(), timestamp: formattedTime };
     setChatMessages((prev) => [...prev, newMsg]);
     if (!textToSend) setInputQuery('');
 
-    // Simulate AI response
+    // Intelligent pedagogical AI response routing
     setTimeout(() => {
-      let responseText = 'Great question! In long division, remember the 4 steps: Divide ➔ Multiply ➔ Subtract ➔ Bring Down.';
-      if (query.toLowerCase().includes('example')) {
+      const qLower = query.toLowerCase().trim();
+      let responseText = 'That is a great question! In long division, remember the 4 core steps: 1) Divide ➔ 2) Multiply ➔ 3) Subtract ➔ 4) Bring Down. Which step would you like to review?';
+
+      if (/^(hi|hello|hey|greetings|good morning|good afternoon)/i.test(qLower)) {
+        responseText = 'Hello there! How can I help you with your Division lesson today? Feel free to ask for a worked example, a practice hint, or concept explanation!';
+      } else if (qLower.includes('example') || qLower.includes('sample')) {
         responseText = 'Let us look at 17 ÷ 3. 3 goes into 17 five times (3 × 5 = 15). 17 minus 15 leaves a remainder of 2!';
-      } else if (query.toLowerCase().includes('fraction')) {
+      } else if (qLower.includes('fraction') || qLower.includes('why')) {
         responseText = 'Division is the foundation of fractions because a fraction like 3/4 literally means 3 divided by 4!';
-      } else if (query.toLowerCase().includes('hint')) {
-        responseText = 'For the practice question below: 23 ÷ 4. Find the largest multiple of 4 that is less than or equal to 23 (4 × 5 = 20).';
+      } else if (qLower.includes('hint') || qLower.includes('practice') || qLower.includes('help')) {
+        responseText = 'For the practice question below: 23 ÷ 4. Find the largest multiple of 4 that is less than or equal to 23 (4 × 5 = 20), then subtract to find the remainder!';
       }
 
       setChatMessages((prev) => [
         ...prev,
         { sender: 'AI', text: responseText, timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) },
       ]);
-    }, 600);
+    }, 500);
   };
 
   const handleCheckAnswer = () => {
@@ -258,29 +268,29 @@ export default function StudentLearningPage() {
                 </div>
 
                 {/* Quick Prompts */}
-                <div className="py-3 flex items-center space-x-1.5 overflow-x-auto text-[11px]">
+                <div className="py-2.5 flex flex-wrap gap-1.5 text-[11px]">
                   <button
                     onClick={() => handleSendMessage('Can you show me an example?')}
-                    className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-full border border-slate-700 whitespace-nowrap"
+                    className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-full border border-slate-700 transition"
                   >
                     💡 Example
                   </button>
                   <button
                     onClick={() => handleSendMessage('Why do fractions need division?')}
-                    className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-full border border-slate-700 whitespace-nowrap"
+                    className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-full border border-slate-700 transition"
                   >
                     ❓ Why Fractions?
                   </button>
                   <button
                     onClick={() => handleSendMessage('Give me a hint for practice')}
-                    className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-full border border-slate-700 whitespace-nowrap"
+                    className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-full border border-slate-700 transition"
                   >
                     🎯 Practice Hint
                   </button>
                 </div>
 
                 {/* Messages Box */}
-                <div className="space-y-3 overflow-y-auto max-h-[340px] pr-1 scrollbar-thin scrollbar-thumb-slate-800">
+                <div className="space-y-3 overflow-y-auto max-h-[330px] pr-1.5 scrollbar-thin scrollbar-thumb-slate-800">
                   {chatMessages.map((msg, i) => (
                     <div
                       key={i}
@@ -297,6 +307,7 @@ export default function StudentLearningPage() {
                       <p className="leading-relaxed">{msg.text}</p>
                     </div>
                   ))}
+                  <div ref={chatEndRef} />
                 </div>
               </div>
 

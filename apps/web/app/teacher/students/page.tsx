@@ -16,13 +16,7 @@ interface Student {
   lastActive: string;
 }
 
-const STUDENTS: Student[] = [
-  { id: 'std-1', name: 'Alex Johnson', email: 'alex@remedial.edu', grade: 'Grade 6', gap: 'Division & Remainders', mastery: 42, status: 'CRITICAL', lastActive: '2h ago' },
-  { id: 'std-2', name: 'Sam Smith', email: 'sam@remedial.edu', grade: 'Grade 6', gap: 'Long Division Steps', mastery: 54, status: 'AT_RISK', lastActive: 'Today' },
-  { id: 'std-3', name: 'Maria Garcia', email: 'maria@remedial.edu', grade: 'Grade 5', gap: 'Addition (carry-over)', mastery: 68, status: 'AT_RISK', lastActive: 'Yesterday' },
-  { id: 'std-4', name: 'Priya Nair', email: 'priya@remedial.edu', grade: 'Grade 6', gap: 'None', mastery: 85, status: 'ON_TRACK', lastActive: '3h ago' },
-  { id: 'std-5', name: 'James Kim', email: 'james@remedial.edu', grade: 'Grade 6', gap: 'None', mastery: 93, status: 'MASTERED', lastActive: 'Yesterday' },
-];
+const STUDENTS: Student[] = [];
 
 function statusBadge(status: Student['status']) {
   switch (status) {
@@ -228,7 +222,11 @@ export default function TeacherStudentsPage() {
                 ))}
                 {filtered.length === 0 && (
                   <tr>
-                    <td colSpan={8} className="p-8 text-center text-slate-500">No students match this filter.</td>
+                    <td colSpan={8} className="p-12 text-center text-slate-400 space-y-2">
+                      <div className="text-3xl">👥</div>
+                      <div className="font-semibold text-slate-300">No students in class roster yet</div>
+                      <p className="text-xs text-slate-500">Click &quot;➕ Register New Student&quot; above to add your first student.</p>
+                    </td>
                   </tr>
                 )}
               </tbody>

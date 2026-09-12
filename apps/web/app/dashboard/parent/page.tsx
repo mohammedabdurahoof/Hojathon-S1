@@ -22,22 +22,7 @@ const CHILDREN_DATA: Record<string, {
   activities: ActivityItem[];
   teacherNote: string;
   weeklyReport: WeeklyReport;
-}> = {
-  'Alex Johnson': {
-    name: 'Alex Johnson', grade: 'Grade 6 Mathematics', mastery: 68, lessonsCompleted: 18, alerts: 1,
-    activities: [
-      { title: 'Fractions & Denominators Remediation', date: 'Today', status: 'IN_PROGRESS', detail: 'Alex completed 3 practice questions with 85% accuracy' },
-      { title: 'Long Division Diagnostic Test', date: 'Yesterday', status: 'COMPLETED', detail: 'Gap identified in multi-digit division steps' },
-      { title: 'Addition & Subtraction Foundations', date: '3 days ago', status: 'MASTERED', detail: '100% mastery confirmed by teacher' },
-    ],
-    teacherNote: '"Alex is making great progress on basic arithmetic. We have assigned a targeted 15-minute remedial lesson on fraction denominators."',
-    weeklyReport: {
-      summary: 'Alex has shown strong improvement in addition and multiplication this week. The AI diagnostic identified a prerequisite gap in Long Division that must be resolved before advancing to Fractions.',
-      highlights: ['Addition mastery: 95% (Up from 88%)', 'Division remediation active: 42% — improving', 'AI Tutor sessions: 4 this week', 'Zero missed sessions'],
-      recommendation: 'Continue Division remediation. Expected Fractions unlock within 5–7 sessions at current rate.',
-    },
-  },
-};
+}> = {};
 
 const STATUS_COLOR: Record<ActivityItem['status'], string> = {
   IN_PROGRESS: 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30',
@@ -53,6 +38,30 @@ export default function ParentDashboardPage() {
   const [messageSent, setMessageSent] = useState(false);
 
   const child = CHILDREN_DATA[selectedChild];
+
+  if (!child) {
+    return (
+      <AuthGuard allowedRoles={['PARENT']}>
+        <DashboardLayout>
+          <div className="space-y-6 max-w-4xl">
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-2xl font-bold text-white tracking-tight">Parent Overview Portal</h1>
+                <p className="text-sm text-slate-400 mt-1">Track your child&apos;s remedial learning progress.</p>
+              </div>
+            </div>
+            <div className="p-12 border border-slate-800 bg-slate-900/60 rounded-2xl text-center space-y-4 my-8">
+              <div className="text-4xl">👪</div>
+              <h2 className="text-xl font-bold text-white">No Linked Student Accounts</h2>
+              <p className="text-xs text-slate-400 max-w-md mx-auto">
+                No student accounts are currently linked to this parent profile. Connect with your child&apos;s teacher to link a student account.
+              </p>
+            </div>
+          </div>
+        </DashboardLayout>
+      </AuthGuard>
+    );
+  }
 
   const parentMetrics = [
     { label: 'Linked Student', value: child.name, change: child.grade, icon: '👦' },
