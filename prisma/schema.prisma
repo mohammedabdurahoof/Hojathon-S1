@@ -19,6 +19,13 @@ enum QuestionType {
   SHORT_ANSWER
 }
 
+enum AssessmentPurpose {
+  DIAGNOSTIC
+  PRACTICE
+  REMEDIAL
+  FINAL
+}
+
 enum AssessmentStatus {
   NOT_STARTED
   IN_PROGRESS
@@ -35,6 +42,32 @@ enum LearningPlanItemStatus {
   PENDING
   IN_PROGRESS
   MASTERED
+}
+
+enum MessageRole {
+  SYSTEM
+  ASSISTANT
+  STUDENT
+}
+
+enum DocumentStatus {
+  UPLOADED
+  PROCESSING
+  PROCESSED
+  FAILED
+  ARCHIVED
+}
+
+enum DocumentVisibility {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum AssociationStatus {
+  SUGGESTED
+  CONFIRMED
+  REJECTED
 }
 
 model User {
@@ -65,6 +98,8 @@ model Student {
   masteries          Mastery[]
   learningPlans      LearningPlan[]
   aiConversations    AiConversation[]
+  misconceptionLogs  MisconceptionLog[]
+  aiInteractionLogs  AiInteractionLog[]
 }
 
 model Teacher {
@@ -90,6 +125,7 @@ model Subject {
   teacher     Teacher?     @relation(fields: [teacherId], references: [id], onDelete: SetNull)
   chapters    Chapter[]
   assessments Assessment[]
+  documents   Document[]
 }
 
 model Chapter {
@@ -100,8 +136,9 @@ model Chapter {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  subject Subject @relation(fields: [subjectId], references: [id], onDelete: Cascade)
-  topics  Topic[]
+  subject   Subject    @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  topics    Topic[]
+  documents Document[]
 }
 
 model Topic {
@@ -112,8 +149,9 @@ model Topic {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  chapter  Chapter   @relation(fields: [chapterId], references: [id], onDelete: Cascade)
-  concepts Concept[]
+  chapter   Chapter    @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  concepts  Concept[]
+  documents Document[]
 }
 
 model Concept {
@@ -125,12 +163,15 @@ model Concept {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  topic             Topic                 @relation(fields: [topicId], references: [id], onDelete: Cascade)
-  prerequisites     ConceptPrerequisite[] @relation("TargetConcept")
-  prerequisiteFor   ConceptPrerequisite[] @relation("PrerequisiteConcept")
-  questions         Question[]
-  masteries         Mastery[]
-  learningPlanItems LearningPlanItem[]
+  topic              Topic               @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  prerequisites      ConceptPrerequisite[] @relation("TargetConcept")
+  prerequisiteFor    ConceptPrerequisite[] @relation("PrerequisiteConcept")
+  questions          Question[]
+  masteries          Mastery[]
+  learningPlanItems  LearningPlanItem[]
+  aiConversations    AiConversation[]
+  misconceptionLogs  MisconceptionLog[]
+  curriculumContents CurriculumContent[]
 }
 
 model ConceptPrerequisite {
@@ -149,54 +190,98 @@ model ConceptPrerequisite {
 }
 
 model Question {
-  id         String       @id @default(uuid())
-  conceptId  String
-  text       String
-  type       QuestionType @default(MULTIPLE_CHOICE)
-  options    Json?
-  answer     String
-  difficulty Int          @default(1)
-  createdAt  DateTime     @default(now())
-  updatedAt  DateTime     @updatedAt
+  id          String       @id @default(uuid())
+  conceptId   String
+  text        String
+  type        QuestionType @default(MULTIPLE_CHOICE)
+  difficulty  Int          @default(3)
+  options     Json?
+  answer      String
+  explanation String?
+  metadata    Json?
+  isActive    Boolean      @default(true)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
 
-  concept Concept @relation(fields: [conceptId], references: [id], onDelete: Cascade)
+  concept             Concept              @relation(fields: [conceptId], references: [id], onDelete: Cascade)
+  assessmentQuestions AssessmentQuestion[]
+  responses           AssessmentResponse[]
 }
 
 model Assessment {
-  id          String   @id @default(uuid())
+  id          String            @id @default(uuid())
   title       String
   description String?
   subjectId   String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  targetGrade Int               @default(8)
+  purpose     AssessmentPurpose @default(DIAGNOSTIC)
+  duration    Int               @default(30)
+  isActive    Boolean           @default(true)
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
 
-  subject  Subject             @relation(fields: [subjectId], references: [id], onDelete: Cascade)
-  attempts AssessmentAttempt[]
+  subject   Subject              @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  questions AssessmentQuestion[]
+  attempts  AssessmentAttempt[]
+}
+
+model AssessmentQuestion {
+  id           String   @id @default(uuid())
+  assessmentId String
+  questionId   String
+  order        Int      @default(1)
+  createdAt    DateTime @default(now())
+
+  assessment Assessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  question   Question   @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@unique([assessmentId, questionId])
 }
 
 model AssessmentAttempt {
-  id           String           @id @default(uuid())
-  assessmentId String
-  studentId    String
-  score        Float?
-  status       AssessmentStatus @default(NOT_STARTED)
-  startedAt    DateTime         @default(now())
-  completedAt  DateTime?
-  createdAt    DateTime         @default(now())
-  updatedAt    DateTime         @updatedAt
+  id               String           @id @default(uuid())
+  assessmentId     String
+  studentId        String
+  score            Float?
+  percentage       Float?
+  totalQuestions   Int              @default(0)
+  correctAnswers   Int              @default(0)
+  incorrectAnswers Int              @default(0)
+  status           AssessmentStatus @default(IN_PROGRESS)
+  startedAt        DateTime         @default(now())
+  completedAt      DateTime?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
 
-  assessment Assessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
-  student    Student    @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  assessment Assessment           @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  student    Student              @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  responses  AssessmentResponse[]
+}
+
+model AssessmentResponse {
+  id               String   @id @default(uuid())
+  attemptId        String
+  questionId       String
+  selectedAnswer   String
+  isCorrect        Boolean
+  timeSpentSeconds Int      @default(0)
+  createdAt        DateTime @default(now())
+
+  attempt  AssessmentAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  question Question          @relation(fields: [questionId], references: [id], onDelete: Cascade)
 }
 
 model Mastery {
-  id        String   @id @default(uuid())
-  studentId String
-  conceptId String
-  score     Float    @default(0)
-  level     Int      @default(0)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id              String   @id @default(uuid())
+  studentId       String
+  conceptId       String
+  masteryScore    Float    @default(0)
+  attempts        Int      @default(0)
+  correctAttempts Int      @default(0)
+  confidence      Float    @default(0.5)
+  lastAssessedAt  DateTime @default(now())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
   student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
   concept Concept @relation(fields: [conceptId], references: [id], onDelete: Cascade)
@@ -205,15 +290,20 @@ model Mastery {
 }
 
 model LearningPlan {
-  id        String             @id @default(uuid())
-  studentId String
-  title     String
-  status    LearningPlanStatus @default(ACTIVE)
-  createdAt DateTime           @default(now())
-  updatedAt DateTime           @updatedAt
+  id                       String             @id @default(uuid())
+  studentId                String
+  targetConceptId          String?
+  title                    String
+  purpose                  String?
+  status                   LearningPlanStatus @default(ACTIVE)
+  estimatedDurationMinutes Int?               @default(120)
+  priority                 String             @default("HIGH")
+  createdAt                DateTime           @default(now())
+  updatedAt                DateTime           @updatedAt
 
-  student Student            @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  items   LearningPlanItem[]
+  student         Student            @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  items           LearningPlanItem[]
+  aiConversations AiConversation[]
 }
 
 model LearningPlanItem {
@@ -221,6 +311,9 @@ model LearningPlanItem {
   learningPlanId String
   conceptId      String
   order          Int                    @default(1)
+  reason         String                 @default("Prerequisite knowledge gap identified")
+  targetMastery  Float                  @default(0.80)
+  currentMastery Float                  @default(0.0)
   status         LearningPlanItemStatus @default(PENDING)
   targetDate     DateTime?
   createdAt      DateTime               @default(now())
@@ -231,46 +324,117 @@ model LearningPlanItem {
 }
 
 model AiConversation {
-  id        String   @id @default(uuid())
-  studentId String
-  title     String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id             String   @id @default(uuid())
+  studentId      String
+  learningPlanId String?
+  conceptId      String?
+  title          String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
-  student  Student     @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  messages AiMessage[]
+  student      Student       @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  learningPlan LearningPlan? @relation(fields: [learningPlanId], references: [id], onDelete: SetNull)
+  concept      Concept?      @relation(fields: [conceptId], references: [id], onDelete: SetNull)
+  messages     AiMessage[]
 }
 
 model AiMessage {
-  id             String   @id @default(uuid())
+  id             String      @id @default(uuid())
   conversationId String
-  sender         String
+  role           MessageRole @default(STUDENT)
+  messageType    String      @default("TEXT")
   content        String
   metadata       Json?
-  createdAt      DateTime @default(now())
+  createdAt      DateTime    @default(now())
 
   conversation AiConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
 }
 
-model Document {
-  id        String   @id @default(uuid())
-  title     String
-  content   String
-  type      String   @default("text")
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+model MisconceptionLog {
+  id             String   @id @default(uuid())
+  studentId      String
+  conceptId      String
+  misconception  String
+  confidence     Float    @default(0.80)
+  questionText   String?
+  studentAnswer  String?
+  createdAt      DateTime @default(now())
 
-  chunks DocumentChunk[]
+  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  concept Concept @relation(fields: [conceptId], references: [id], onDelete: Cascade)
+}
+
+model AiInteractionLog {
+  id         String   @id @default(uuid())
+  studentId  String?
+  provider   String
+  model      String
+  operation  String
+  latencyMs  Int
+  success    Boolean  @default(true)
+  error      String?
+  tokenUsage Json?
+  createdAt  DateTime @default(now())
+
+  student Student? @relation(fields: [studentId], references: [id], onDelete: SetNull)
+}
+
+model Document {
+  id             String             @id @default(uuid())
+  title          String
+  description    String?
+  fileName       String
+  mimeType       String             @default("text/plain")
+  fileSize       Int                @default(0)
+  storageKey     String             @default("")
+  subjectId      String?
+  chapterId      String?
+  topicId        String?
+  uploadedBy     String             @default("system")
+  status         DocumentStatus     @default(UPLOADED)
+  visibility     DocumentVisibility @default(DRAFT)
+  version        Int                @default(1)
+  curriculumYear String             @default("2026")
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+
+  subject Subject?        @relation(fields: [subjectId], references: [id], onDelete: SetNull)
+  chapter Chapter?        @relation(fields: [chapterId], references: [id], onDelete: SetNull)
+  topic   Topic?          @relation(fields: [topicId], references: [id], onDelete: SetNull)
+  chunks  DocumentChunk[]
 }
 
 model DocumentChunk {
-  id         String   @id @default(uuid())
-  documentId String
-  content    String
-  chunkIndex Int
-  metadata   Json?
-  embedding  String?
-  createdAt  DateTime @default(now())
+  id           String   @id @default(uuid())
+  documentId   String
+  chunkIndex   Int
+  content      String
+  tokenCount   Int      @default(0)
+  pageNumber   Int?
+  sectionTitle String?
+  subjectId    String?
+  chapterId    String?
+  topicId      String?
+  conceptId    String?
+  embedding    String?
+  metadata     Json?
+  createdAt    DateTime @default(now())
 
-  document Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  document           Document            @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  curriculumContents CurriculumContent[]
+}
+
+model CurriculumContent {
+  id                String            @id @default(uuid())
+  conceptId         String
+  documentChunkId   String
+  relevanceScore    Float?            @default(1.0)
+  isPrimary         Boolean           @default(false)
+  associationStatus AssociationStatus @default(CONFIRMED)
+  createdAt         DateTime          @default(now())
+
+  concept       Concept       @relation(fields: [conceptId], references: [id], onDelete: Cascade)
+  documentChunk DocumentChunk @relation(fields: [documentChunkId], references: [id], onDelete: Cascade)
+
+  @@unique([conceptId, documentChunkId])
 }

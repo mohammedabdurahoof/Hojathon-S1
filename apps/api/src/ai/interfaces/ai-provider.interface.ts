@@ -6,7 +6,9 @@ export interface GenerateTextOptions {
 }
 
 export interface GenerateStructuredOutputOptions<T = any> extends GenerateTextOptions {
+  schemaName?: string;
   schema?: Record<string, any>;
+  validator?: (output: any) => T;
 }
 
 export interface AIProvider {

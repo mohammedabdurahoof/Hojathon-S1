@@ -10,6 +10,13 @@ export enum QuestionType {
   SHORT_ANSWER = 'SHORT_ANSWER',
 }
 
+export enum AssessmentPurpose {
+  DIAGNOSTIC = 'DIAGNOSTIC',
+  PRACTICE = 'PRACTICE',
+  REMEDIAL = 'REMEDIAL',
+  FINAL = 'FINAL',
+}
+
 export enum AssessmentStatus {
   NOT_STARTED = 'NOT_STARTED',
   IN_PROGRESS = 'IN_PROGRESS',
@@ -28,27 +35,105 @@ export enum LearningPlanItemStatus {
   MASTERED = 'MASTERED',
 }
 
-export interface UserDto {
+export enum MessageRole {
+  SYSTEM = 'SYSTEM',
+  ASSISTANT = 'ASSISTANT',
+  STUDENT = 'STUDENT',
+}
+
+export enum DocumentStatus {
+  UPLOADED = 'UPLOADED',
+  PROCESSING = 'PROCESSING',
+  PROCESSED = 'PROCESSED',
+  FAILED = 'FAILED',
+  ARCHIVED = 'ARCHIVED',
+}
+
+export enum DocumentVisibility {
+  DRAFT = 'DRAFT',
+  PUBLISHED = 'PUBLISHED',
+  ARCHIVED = 'ARCHIVED',
+}
+
+export enum AssociationStatus {
+  SUGGESTED = 'SUGGESTED',
+  CONFIRMED = 'CONFIRMED',
+  REJECTED = 'REJECTED',
+}
+
+export type TutorResponseType = 'QUESTION' | 'EXPLANATION' | 'HINT' | 'FEEDBACK' | 'ENCOURAGEMENT';
+export type TutorNextAction = 'ANSWER' | 'CONTINUE' | 'PRACTICE' | 'ASSESS';
+
+export interface TutorResponseDto {
+  type: TutorResponseType;
+  message: string;
+  conceptId: string;
+  difficulty: number;
+  requiresStudentResponse: boolean;
+  nextAction: TutorNextAction;
+  sources?: RAGSourceCitationDto[];
+}
+
+export interface RAGSourceCitationDto {
+  documentId: string;
+  documentTitle: string;
+  chunkId: string;
+  pageNumber: number | null;
+  sectionTitle: string | null;
+}
+
+export interface DocumentChunkDto {
   id: string;
-  email: string;
-  name: string;
-  role: UserRole;
+  documentId: string;
+  chunkIndex: number;
+  content: string;
+  tokenCount: number;
+  pageNumber?: number | null;
+  sectionTitle?: string | null;
+  score?: number;
+}
+
+export interface DocumentDto {
+  id: string;
+  title: string;
+  description?: string | null;
+  fileName: string;
+  mimeType: string;
+  fileSize: number;
+  storageKey: string;
+  status: DocumentStatus;
+  visibility: DocumentVisibility;
+  version: number;
+  curriculumYear: string;
   createdAt: string;
+  updatedAt: string;
 }
 
-export interface StudentDto {
-  id: string;
-  userId: string;
-  gradeLevel: number;
-  targetGradeLevel: number;
-  user?: UserDto;
+export type EvaluationStatus = 'CORRECT' | 'PARTIALLY_CORRECT' | 'INCORRECT' | 'UNCLEAR';
+
+export interface LessonSectionDto {
+  type: 'OBJECTIVE' | 'EXPLANATION' | 'EXAMPLE' | 'GUIDED_PRACTICE' | 'INDEPENDENT_PRACTICE';
+  content: string;
+  question?: string;
+  options?: string[];
+  answer?: string;
 }
 
-export interface TeacherDto {
-  id: string;
-  userId: string;
-  department: string;
-  user?: UserDto;
+export interface LessonDto {
+  concept: string;
+  objective: string;
+  prerequisiteCheck?: string;
+  sections: LessonSectionDto[];
+}
+
+export interface EvaluationResultDto {
+  correct: boolean;
+  status: EvaluationStatus;
+  score: number;
+  confidence: number;
+  feedback: string;
+  misconception?: string | null;
+  hint?: string | null;
 }
 
 export interface HealthResponse {
@@ -62,3 +147,4 @@ export interface ApiResponse<T = any> {
   message?: string;
   error?: string;
 }
+
