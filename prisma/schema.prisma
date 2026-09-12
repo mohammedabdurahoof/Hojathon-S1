@@ -170,6 +170,9 @@ model Student {
   classEnrollments   StudentClassEnrollment[]
   interventions      Intervention[]
   teacherAlerts      TeacherAlert[]
+
+  @@index([userId])
+  @@index([createdAt])
 }
 
 model Teacher {
@@ -445,6 +448,10 @@ model AssessmentAttempt {
   answers    AssessmentAnswer[]
 
   @@index([studentId, assessmentId])
+  @@index([studentId, status])
+  @@index([studentId, createdAt])
+  @@index([assessmentId, status])
+  @@index([state])
 }
 
 model AssessmentResponse {
@@ -478,6 +485,8 @@ model AssessmentAnswer {
   question Question          @relation(fields: [questionId], references: [id], onDelete: Cascade)
 
   @@index([attemptId, questionId])
+  @@index([attemptId])
+  @@index([questionId])
 }
 
 model InterventionAssessmentComparison {
@@ -510,6 +519,9 @@ model Mastery {
   concept Concept @relation(fields: [conceptId], references: [id], onDelete: Cascade)
 
   @@unique([studentId, conceptId])
+  @@index([studentId])
+  @@index([conceptId])
+  @@index([lastAssessedAt])
 }
 
 model LearningPlan {
@@ -527,6 +539,9 @@ model LearningPlan {
   student         Student            @relation(fields: [studentId], references: [id], onDelete: Cascade)
   items           LearningPlanItem[]
   aiConversations AiConversation[]
+
+  @@index([studentId, status])
+  @@index([studentId, createdAt])
 }
 
 model LearningPlanItem {
@@ -757,6 +772,11 @@ model MasteryEvidence {
 
   student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
   concept Concept @relation(fields: [conceptId], references: [id], onDelete: Cascade)
+
+  @@index([studentId, conceptId])
+  @@index([studentId, createdAt])
+  @@index([studentId, conceptId, createdAt])
+  @@index([conceptId])
 }
 
 model MasteryHistory {
@@ -826,6 +846,10 @@ model LearningEvent {
   createdAt DateTime          @default(now())
 
   student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@index([studentId, createdAt])
+  @@index([studentId, eventType])
+  @@index([conceptId])
 }
 
 model AdaptiveSession {
@@ -953,6 +977,8 @@ model StudentClassEnrollment {
   classGroup ClassGroup @relation(fields: [classGroupId], references: [id], onDelete: Cascade)
 
   @@unique([studentId, classGroupId])
+  @@index([classGroupId, studentId])
+  @@index([studentId])
 }
 
 model Intervention {
@@ -1000,6 +1026,51 @@ model TeacherAlert {
   teacher    Teacher     @relation(fields: [teacherId], references: [id], onDelete: Cascade)
   student    Student?    @relation(fields: [studentId], references: [id], onDelete: SetNull)
   classGroup ClassGroup? @relation(fields: [classId], references: [id], onDelete: SetNull)
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PHASE 8: Audit Log — append-only record of sensitive system actions
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum AuditAction {
+  LOGIN
+  LOGOUT
+  REGISTER
+  PASSWORD_CHANGE
+  ROLE_CHANGE
+  ASSESSMENT_PUBLISH
+  ASSESSMENT_RETIRE
+  QUESTION_APPROVE
+  QUESTION_RETIRE
+  STUDENT_STATUS_CHANGE
+  TEACHER_ASSIGNMENT
+  INTERVENTION_ASSIGN
+  INTERVENTION_COMPLETE
+  ADMIN_CONFIG_CHANGE
+  DOCUMENT_UPLOAD
+  DOCUMENT_DELETE
+  AI_ADMIN_ACTION
+  DATA_EXPORT
+  UNAUTHORIZED_ACCESS_ATTEMPT
+}
+
+model AuditLog {
+  id           String      @id @default(uuid())
+  actorId      String?     // User who performed the action (null for system)
+  actorRole    String?     // Role at time of action
+  action       AuditAction
+  resourceType String?     // e.g., 'Assessment', 'Student', 'Question'
+  resourceId   String?     // ID of the affected resource
+  metadata     Json?       // Safe context (never includes secrets)
+  ipAddress    String?     // Anonymized or hashed in privacy-sensitive contexts
+  userAgent    String?
+  requestId    String?     // Correlation ID for tracing
+  createdAt    DateTime    @default(now())
+
+  @@index([actorId, createdAt])
+  @@index([action, createdAt])
+  @@index([resourceType, resourceId])
+  @@index([createdAt])
 }
 
 

@@ -1,0 +1,46 @@
+# Stage 1: Builder
+FROM node:20-alpine AS builder
+
+WORKDIR /app
+
+# Copy package.json files
+COPY package*.json ./
+
+# Assuming build context is the root of the monorepo, or adjusting to copy from relative path if context is apps/api
+# The prompt mentions prisma schema is at ../../prisma/ from apps/api
+COPY ../../prisma/ ./prisma/
+COPY package*.json ./
+
+RUN npm ci
+
+COPY . .
+
+# Run production build
+RUN npm run build
+RUN npm ci --only=production
+
+# Stage 2: Production
+FROM node:20-alpine
+
+# Create non-root user
+RUN addgroup -g 1001 nodejs && \
+    adduser -S nestjs -u 1001
+
+WORKDIR /app
+
+# Copy built assets and dependencies from builder
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/prisma ./prisma
+
+# Change ownership
+RUN chown -R nestjs:nodejs /app
+
+USER nestjs
+
+EXPOSE 3001
+
+HEALTHCHECK --interval=30s --timeout=3s \
+  CMD curl -f http://localhost:3001/api/health/live || exit 1
+
+CMD ["node", "dist/main"]

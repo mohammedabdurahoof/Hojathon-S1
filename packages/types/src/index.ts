@@ -1,65 +1,75 @@
-export enum UserRole {
-  ADMIN = 'ADMIN',
-  TEACHER = 'TEACHER',
-  STUDENT = 'STUDENT',
-}
+export const UserRole = {
+  ADMIN: 'ADMIN',
+  TEACHER: 'TEACHER',
+  STUDENT: 'STUDENT',
+} as const;
+export type UserRole = (typeof UserRole)[keyof typeof UserRole];
 
-export enum QuestionType {
-  MULTIPLE_CHOICE = 'MULTIPLE_CHOICE',
-  TRUE_FALSE = 'TRUE_FALSE',
-  SHORT_ANSWER = 'SHORT_ANSWER',
-}
+export const QuestionType = {
+  MULTIPLE_CHOICE: 'MULTIPLE_CHOICE',
+  TRUE_FALSE: 'TRUE_FALSE',
+  SHORT_ANSWER: 'SHORT_ANSWER',
+} as const;
+export type QuestionType = (typeof QuestionType)[keyof typeof QuestionType];
 
-export enum AssessmentPurpose {
-  DIAGNOSTIC = 'DIAGNOSTIC',
-  PRACTICE = 'PRACTICE',
-  REMEDIAL = 'REMEDIAL',
-  FINAL = 'FINAL',
-}
+export const AssessmentPurpose = {
+  DIAGNOSTIC: 'DIAGNOSTIC',
+  PRACTICE: 'PRACTICE',
+  REMEDIAL: 'REMEDIAL',
+  FINAL: 'FINAL',
+} as const;
+export type AssessmentPurpose = (typeof AssessmentPurpose)[keyof typeof AssessmentPurpose];
 
-export enum AssessmentStatus {
-  NOT_STARTED = 'NOT_STARTED',
-  IN_PROGRESS = 'IN_PROGRESS',
-  COMPLETED = 'COMPLETED',
-}
+export const AssessmentStatus = {
+  NOT_STARTED: 'NOT_STARTED',
+  IN_PROGRESS: 'IN_PROGRESS',
+  COMPLETED: 'COMPLETED',
+} as const;
+export type AssessmentStatus = (typeof AssessmentStatus)[keyof typeof AssessmentStatus];
 
-export enum LearningPlanStatus {
-  ACTIVE = 'ACTIVE',
-  COMPLETED = 'COMPLETED',
-  PAUSED = 'PAUSED',
-}
+export const LearningPlanStatus = {
+  ACTIVE: 'ACTIVE',
+  COMPLETED: 'COMPLETED',
+  PAUSED: 'PAUSED',
+} as const;
+export type LearningPlanStatus = (typeof LearningPlanStatus)[keyof typeof LearningPlanStatus];
 
-export enum LearningPlanItemStatus {
-  PENDING = 'PENDING',
-  IN_PROGRESS = 'IN_PROGRESS',
-  MASTERED = 'MASTERED',
-}
+export const LearningPlanItemStatus = {
+  PENDING: 'PENDING',
+  IN_PROGRESS: 'IN_PROGRESS',
+  MASTERED: 'MASTERED',
+} as const;
+export type LearningPlanItemStatus = (typeof LearningPlanItemStatus)[keyof typeof LearningPlanItemStatus];
 
-export enum MessageRole {
-  SYSTEM = 'SYSTEM',
-  ASSISTANT = 'ASSISTANT',
-  STUDENT = 'STUDENT',
-}
+export const MessageRole = {
+  SYSTEM: 'SYSTEM',
+  ASSISTANT: 'ASSISTANT',
+  STUDENT: 'STUDENT',
+} as const;
+export type MessageRole = (typeof MessageRole)[keyof typeof MessageRole];
 
-export enum DocumentStatus {
-  UPLOADED = 'UPLOADED',
-  PROCESSING = 'PROCESSING',
-  PROCESSED = 'PROCESSED',
-  FAILED = 'FAILED',
-  ARCHIVED = 'ARCHIVED',
-}
+export const DocumentStatus = {
+  UPLOADED: 'UPLOADED',
+  PROCESSING: 'PROCESSING',
+  PROCESSED: 'PROCESSED',
+  FAILED: 'FAILED',
+  ARCHIVED: 'ARCHIVED',
+} as const;
+export type DocumentStatus = (typeof DocumentStatus)[keyof typeof DocumentStatus];
 
-export enum DocumentVisibility {
-  DRAFT = 'DRAFT',
-  PUBLISHED = 'PUBLISHED',
-  ARCHIVED = 'ARCHIVED',
-}
+export const DocumentVisibility = {
+  DRAFT: 'DRAFT',
+  PUBLISHED: 'PUBLISHED',
+  ARCHIVED: 'ARCHIVED',
+} as const;
+export type DocumentVisibility = (typeof DocumentVisibility)[keyof typeof DocumentVisibility];
 
-export enum AssociationStatus {
-  SUGGESTED = 'SUGGESTED',
-  CONFIRMED = 'CONFIRMED',
-  REJECTED = 'REJECTED',
-}
+export const AssociationStatus = {
+  SUGGESTED: 'SUGGESTED',
+  CONFIRMED: 'CONFIRMED',
+  REJECTED: 'REJECTED',
+} as const;
+export type AssociationStatus = (typeof AssociationStatus)[keyof typeof AssociationStatus];
 
 export type TutorResponseType = 'QUESTION' | 'EXPLANATION' | 'HINT' | 'FEEDBACK' | 'ENCOURAGEMENT';
 export type TutorNextAction = 'ANSWER' | 'CONTINUE' | 'PRACTICE' | 'ASSESS';
@@ -136,81 +146,88 @@ export interface EvaluationResultDto {
   hint?: string | null;
 }
 
-export enum EvidenceSource {
-  DIAGNOSTIC = 'DIAGNOSTIC',
-  PRACTICE = 'PRACTICE',
-  TUTOR = 'TUTOR',
-  REMEDIAL = 'REMEDIAL',
-  ASSESSMENT = 'ASSESSMENT',
-  AI_EVALUATION = 'AI_EVALUATION',
-}
+export const EvidenceSource = {
+  DIAGNOSTIC: 'DIAGNOSTIC',
+  PRACTICE: 'PRACTICE',
+  TUTOR: 'TUTOR',
+  REMEDIAL: 'REMEDIAL',
+  ASSESSMENT: 'ASSESSMENT',
+  AI_EVALUATION: 'AI_EVALUATION',
+} as const;
+export type EvidenceSource = (typeof EvidenceSource)[keyof typeof EvidenceSource];
 
-export enum MasteryHistoryReason {
-  INITIAL_ASSESSMENT = 'INITIAL_ASSESSMENT',
-  CORRECT_ANSWER = 'CORRECT_ANSWER',
-  INCORRECT_ANSWER = 'INCORRECT_ANSWER',
-  REMEDIAL_SUCCESS = 'REMEDIAL_SUCCESS',
-  REMEDIAL_FAILURE = 'REMEDIAL_FAILURE',
-  ASSESSMENT_RESULT = 'ASSESSMENT_RESULT',
-  MANUAL_ADJUSTMENT = 'MANUAL_ADJUSTMENT',
-}
+export const MasteryHistoryReason = {
+  INITIAL_ASSESSMENT: 'INITIAL_ASSESSMENT',
+  CORRECT_ANSWER: 'CORRECT_ANSWER',
+  INCORRECT_ANSWER: 'INCORRECT_ANSWER',
+  REMEDIAL_SUCCESS: 'REMEDIAL_SUCCESS',
+  REMEDIAL_FAILURE: 'REMEDIAL_FAILURE',
+  ASSESSMENT_RESULT: 'ASSESSMENT_RESULT',
+  MANUAL_ADJUSTMENT: 'MANUAL_ADJUSTMENT',
+} as const;
+export type MasteryHistoryReason = (typeof MasteryHistoryReason)[keyof typeof MasteryHistoryReason];
 
-export enum MisconceptionCategory {
-  ARITHMETIC_ERROR = 'ARITHMETIC_ERROR',
-  SIGN_ERROR = 'SIGN_ERROR',
-  PLACE_VALUE_ERROR = 'PLACE_VALUE_ERROR',
-  FRACTION_DENOMINATOR_ERROR = 'FRACTION_DENOMINATOR_ERROR',
-  FRACTION_NUMERATOR_ERROR = 'FRACTION_NUMERATOR_ERROR',
-  UNIT_CONVERSION_ERROR = 'UNIT_CONVERSION_ERROR',
-  FORMULA_RECALL_ERROR = 'FORMULA_RECALL_ERROR',
-  CONCEPT_CONFUSION = 'CONCEPT_CONFUSION',
-  PREREQUISITE_GAP = 'PREREQUISITE_GAP',
-  PROCEDURAL_ERROR = 'PROCEDURAL_ERROR',
-  READING_COMPREHENSION_ERROR = 'READING_COMPREHENSION_ERROR',
-  CARELESS_ERROR = 'CARELESS_ERROR',
-  UNKNOWN = 'UNKNOWN',
-}
+export const MisconceptionCategory = {
+  ARITHMETIC_ERROR: 'ARITHMETIC_ERROR',
+  SIGN_ERROR: 'SIGN_ERROR',
+  PLACE_VALUE_ERROR: 'PLACE_VALUE_ERROR',
+  FRACTION_DENOMINATOR_ERROR: 'FRACTION_DENOMINATOR_ERROR',
+  FRACTION_NUMERATOR_ERROR: 'FRACTION_NUMERATOR_ERROR',
+  UNIT_CONVERSION_ERROR: 'UNIT_CONVERSION_ERROR',
+  FORMULA_RECALL_ERROR: 'FORMULA_RECALL_ERROR',
+  CONCEPT_CONFUSION: 'CONCEPT_CONFUSION',
+  PREREQUISITE_GAP: 'PREREQUISITE_GAP',
+  PROCEDURAL_ERROR: 'PROCEDURAL_ERROR',
+  READING_COMPREHENSION_ERROR: 'READING_COMPREHENSION_ERROR',
+  CARELESS_ERROR: 'CARELESS_ERROR',
+  UNKNOWN: 'UNKNOWN',
+} as const;
+export type MisconceptionCategory = (typeof MisconceptionCategory)[keyof typeof MisconceptionCategory];
 
-export enum LearningRecommendationType {
-  CONTINUE = 'CONTINUE',
-  PRACTICE = 'PRACTICE',
-  REMEDIATE = 'REMEDIATE',
-  REVIEW_PREREQUISITE = 'REVIEW_PREREQUISITE',
-  REASSESS = 'REASSESS',
-  ADVANCE = 'ADVANCE',
-  REVIEW_LATER = 'REVIEW_LATER',
-}
+export const LearningRecommendationType = {
+  CONTINUE: 'CONTINUE',
+  PRACTICE: 'PRACTICE',
+  REMEDIATE: 'REMEDIATE',
+  REVIEW_PREREQUISITE: 'REVIEW_PREREQUISITE',
+  REASSESS: 'REASSESS',
+  ADVANCE: 'ADVANCE',
+  REVIEW_LATER: 'REVIEW_LATER',
+} as const;
+export type LearningRecommendationType = (typeof LearningRecommendationType)[keyof typeof LearningRecommendationType];
 
-export enum AdaptiveSessionStatus {
-  STARTED = 'STARTED',
-  DIAGNOSING = 'DIAGNOSING',
-  TEACHING = 'TEACHING',
-  PRACTICING = 'PRACTICING',
-  REMEDIATING = 'REMEDIATING',
-  REASSESSING = 'REASSESSING',
-  COMPLETED = 'COMPLETED',
-}
+export const AdaptiveSessionStatus = {
+  STARTED: 'STARTED',
+  DIAGNOSING: 'DIAGNOSING',
+  TEACHING: 'TEACHING',
+  PRACTICING: 'PRACTICING',
+  REMEDIATING: 'REMEDIATING',
+  REASSESSING: 'REASSESSING',
+  COMPLETED: 'COMPLETED',
+} as const;
+export type AdaptiveSessionStatus = (typeof AdaptiveSessionStatus)[keyof typeof AdaptiveSessionStatus];
 
-export enum LearningEventType {
-  QUESTION_SHOWN = 'QUESTION_SHOWN',
-  QUESTION_ANSWERED = 'QUESTION_ANSWERED',
-  HINT_REQUESTED = 'HINT_REQUESTED',
-  MISCONCEPTION_DETECTED = 'MISCONCEPTION_DETECTED',
-  MASTERY_UPDATED = 'MASTERY_UPDATED',
-  CONCEPT_MASTERED = 'CONCEPT_MASTERED',
-  REMEDIATION_STARTED = 'REMEDIATION_STARTED',
-  REASSESSMENT_STARTED = 'REASSESSMENT_STARTED',
-  REVIEW_SCHEDULED = 'REVIEW_SCHEDULED',
-  REVIEW_COMPLETED = 'REVIEW_COMPLETED',
-  CONCEPT_REGRESSED = 'CONCEPT_REGRESSED',
-}
+export const LearningEventType = {
+  QUESTION_SHOWN: 'QUESTION_SHOWN',
+  QUESTION_ANSWERED: 'QUESTION_ANSWERED',
+  HINT_REQUESTED: 'HINT_REQUESTED',
+  MISCONCEPTION_DETECTED: 'MISCONCEPTION_DETECTED',
+  MASTERY_UPDATED: 'MASTERY_UPDATED',
+  CONCEPT_MASTERED: 'CONCEPT_MASTERED',
+  REMEDIATION_STARTED: 'REMEDIATION_STARTED',
+  REASSESSMENT_STARTED: 'REASSESSMENT_STARTED',
+  REVIEW_SCHEDULED: 'REVIEW_SCHEDULED',
+  REVIEW_COMPLETED: 'REVIEW_COMPLETED',
+  CONCEPT_REGRESSED: 'CONCEPT_REGRESSED',
+} as const;
+export type LearningEventType = (typeof LearningEventType)[keyof typeof LearningEventType];
 
-export enum QuestionObjectiveType {
-  RECALL = 'RECALL',
-  PROCEDURAL = 'PROCEDURAL',
-  APPLICATION = 'APPLICATION',
-  TRANSFER = 'TRANSFER',
-}
+export const QuestionObjectiveType = {
+  RECALL: 'RECALL',
+  PROCEDURAL: 'PROCEDURAL',
+  APPLICATION: 'APPLICATION',
+  TRANSFER: 'TRANSFER',
+} as const;
+export type QuestionObjectiveType = (typeof QuestionObjectiveType)[keyof typeof QuestionObjectiveType];
 
 export interface MasteryInputDto {
   previousMastery: number;
@@ -298,69 +315,77 @@ export interface AdaptiveSessionDto {
   currentQuestion?: any;
 }
 
-export enum ClassGroupStatus {
-  ACTIVE = 'ACTIVE',
-  ARCHIVED = 'ARCHIVED',
-}
+export const ClassGroupStatus = {
+  ACTIVE: 'ACTIVE',
+  ARCHIVED: 'ARCHIVED',
+} as const;
+export type ClassGroupStatus = (typeof ClassGroupStatus)[keyof typeof ClassGroupStatus];
 
-export enum RiskLevel {
-  ON_TRACK = 'ON_TRACK',
-  WATCH = 'WATCH',
-  AT_RISK = 'AT_RISK',
-  CRITICAL = 'CRITICAL',
-}
+export const RiskLevel = {
+  ON_TRACK: 'ON_TRACK',
+  WATCH: 'WATCH',
+  AT_RISK: 'AT_RISK',
+  CRITICAL: 'CRITICAL',
+} as const;
+export type RiskLevel = (typeof RiskLevel)[keyof typeof RiskLevel];
 
-export enum InterventionType {
-  INDIVIDUAL_REMEDIATION = 'INDIVIDUAL_REMEDIATION',
-  GROUP_REMEDIATION = 'GROUP_REMEDIATION',
-  PREREQUISITE_REVIEW = 'PREREQUISITE_REVIEW',
-  ADDITIONAL_PRACTICE = 'ADDITIONAL_PRACTICE',
-  TEACHER_EXPLANATION = 'TEACHER_EXPLANATION',
-  ASSESSMENT = 'ASSESSMENT',
-  REVIEW = 'REVIEW',
-  PEER_SUPPORT = 'PEER_SUPPORT',
-  CURRICULUM_REVIEW = 'CURRICULUM_REVIEW',
-}
+export const InterventionType = {
+  INDIVIDUAL_REMEDIATION: 'INDIVIDUAL_REMEDIATION',
+  GROUP_REMEDIATION: 'GROUP_REMEDIATION',
+  PREREQUISITE_REVIEW: 'PREREQUISITE_REVIEW',
+  ADDITIONAL_PRACTICE: 'ADDITIONAL_PRACTICE',
+  TEACHER_EXPLANATION: 'TEACHER_EXPLANATION',
+  ASSESSMENT: 'ASSESSMENT',
+  REVIEW: 'REVIEW',
+  PEER_SUPPORT: 'PEER_SUPPORT',
+  CURRICULUM_REVIEW: 'CURRICULUM_REVIEW',
+} as const;
+export type InterventionType = (typeof InterventionType)[keyof typeof InterventionType];
 
-export enum InterventionStatus {
-  RECOMMENDED = 'RECOMMENDED',
-  ASSIGNED = 'ASSIGNED',
-  IN_PROGRESS = 'IN_PROGRESS',
-  COMPLETED = 'COMPLETED',
-  DISMISSED = 'DISMISSED',
-}
+export const InterventionStatus = {
+  RECOMMENDED: 'RECOMMENDED',
+  ASSIGNED: 'ASSIGNED',
+  IN_PROGRESS: 'IN_PROGRESS',
+  COMPLETED: 'COMPLETED',
+  DISMISSED: 'DISMISSED',
+} as const;
+export type InterventionStatus = (typeof InterventionStatus)[keyof typeof InterventionStatus];
 
-export enum InterventionOutcome {
-  SUCCESSFUL = 'SUCCESSFUL',
-  PARTIALLY_SUCCESSFUL = 'PARTIALLY_SUCCESSFUL',
-  UNSUCCESSFUL = 'UNSUCCESSFUL',
-  INCONCLUSIVE = 'INCONCLUSIVE',
-}
+export const InterventionOutcome = {
+  SUCCESSFUL: 'SUCCESSFUL',
+  PARTIALLY_SUCCESSFUL: 'PARTIALLY_SUCCESSFUL',
+  UNSUCCESSFUL: 'UNSUCCESSFUL',
+  INCONCLUSIVE: 'INCONCLUSIVE',
+} as const;
+export type InterventionOutcome = (typeof InterventionOutcome)[keyof typeof InterventionOutcome];
 
-export enum AlertSeverity {
-  LOW = 'LOW',
-  MEDIUM = 'MEDIUM',
-  HIGH = 'HIGH',
-  CRITICAL = 'CRITICAL',
-}
+export const AlertSeverity = {
+  LOW: 'LOW',
+  MEDIUM: 'MEDIUM',
+  HIGH: 'HIGH',
+  CRITICAL: 'CRITICAL',
+} as const;
+export type AlertSeverity = (typeof AlertSeverity)[keyof typeof AlertSeverity];
 
-export enum AlertType {
-  STUDENT_AT_RISK = 'STUDENT_AT_RISK',
-  STUDENT_CRITICAL = 'STUDENT_CRITICAL',
-  CLASS_BOTTLENECK = 'CLASS_BOTTLENECK',
-  MISCONCEPTION_CLUSTER = 'MISCONCEPTION_CLUSTER',
-  MASTERY_REGRESSION = 'MASTERY_REGRESSION',
-  REMEDIATION_FAILURE = 'REMEDIATION_FAILURE',
-  REVIEW_OVERDUE = 'REVIEW_OVERDUE',
-  INTERVENTION_NEEDED = 'INTERVENTION_NEEDED',
-}
+export const AlertType = {
+  STUDENT_AT_RISK: 'STUDENT_AT_RISK',
+  STUDENT_CRITICAL: 'STUDENT_CRITICAL',
+  CLASS_BOTTLENECK: 'CLASS_BOTTLENECK',
+  MISCONCEPTION_CLUSTER: 'MISCONCEPTION_CLUSTER',
+  MASTERY_REGRESSION: 'MASTERY_REGRESSION',
+  REMEDIATION_FAILURE: 'REMEDIATION_FAILURE',
+  REVIEW_OVERDUE: 'REVIEW_OVERDUE',
+  INTERVENTION_NEEDED: 'INTERVENTION_NEEDED',
+} as const;
+export type AlertType = (typeof AlertType)[keyof typeof AlertType];
 
-export enum AlertStatus {
-  UNREAD = 'UNREAD',
-  READ = 'READ',
-  RESOLVED = 'RESOLVED',
-  DISMISSED = 'DISMISSED',
-}
+export const AlertStatus = {
+  UNREAD: 'UNREAD',
+  READ: 'READ',
+  RESOLVED: 'RESOLVED',
+  DISMISSED: 'DISMISSED',
+} as const;
+export type AlertStatus = (typeof AlertStatus)[keyof typeof AlertStatus];
 
 export interface RiskReasonDto {
   type?: string;
@@ -490,6 +515,3 @@ export interface TeacherDashboardDto {
   recommendedInterventions?: InterventionDto[];
   alerts?: TeacherAlertDto[];
 }
-
-
-

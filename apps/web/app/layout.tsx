@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
+import { AuthProvider } from '@/components/auth/AuthContext';
 
 export const metadata: Metadata = {
   title: 'AI Remedial Learning Platform',
@@ -14,7 +15,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="bg-slate-950 text-slate-100 antialiased min-h-screen">
-        {children}
+        <AuthProvider>
+          {children}
+        </AuthProvider>
       </body>
     </html>
   );

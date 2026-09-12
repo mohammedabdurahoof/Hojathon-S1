@@ -1,0 +1,86 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GHCR_TOKEN }}
+
+      - name: Build and push API image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: apps/api/Dockerfile.production
+          push: true
+          tags: ghcr.io/${{ github.repository }}/api:${{ github.sha }},ghcr.io/${{ github.repository }}/api:latest
+
+      - name: Build and push Web image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: apps/web/Dockerfile.production
+          push: true
+          tags: ghcr.io/${{ github.repository }}/web:${{ github.sha }},ghcr.io/${{ github.repository }}/web:latest
+
+      - name: Build and push Worker image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: apps/api/Dockerfile.production
+          push: true
+          tags: ghcr.io/${{ github.repository }}/worker:${{ github.sha }},ghcr.io/${{ github.repository }}/worker:latest
+
+      - name: Deploy to Production Server
+        uses: appleboy/ssh-action@v0.1.7
+        with:
+          host: ${{ secrets.PROD_HOST }}
+          username: ${{ secrets.PROD_USER }}
+          key: ${{ secrets.PROD_SSH_KEY }}
+          script: |
+            cd /opt/hojathon
+            
+            # Pull new images
+            docker pull ghcr.io/${{ github.repository }}/api:${{ github.sha }}
+            docker pull ghcr.io/${{ github.repository }}/web:${{ github.sha }}
+            docker pull ghcr.io/${{ github.repository }}/worker:${{ github.sha }}
+            
+            # Update .env or docker-compose to use the new SHA tags
+            sed -i 's/api:latest/api:${{ github.sha }}/g' docker-compose.production.yml
+            sed -i 's/web:latest/web:${{ github.sha }}/g' docker-compose.production.yml
+            sed -i 's/worker:latest/worker:${{ github.sha }}/g' docker-compose.production.yml
+            
+            # Run migrations
+            docker run --rm --env-file .env.production ghcr.io/${{ github.repository }}/api:${{ github.sha }} npx prisma migrate deploy
+            
+            # Start new containers
+            docker-compose -f docker-compose.production.yml up -d
+            
+            # Health check
+            sleep 10
+            if ! curl -f http://localhost:3001/api/health/live; then
+              echo "Health check failed, rolling back..."
+              # Revert sed changes (assuming previous state was latest or storing previous sha)
+              git checkout docker-compose.production.yml
+              docker-compose -f docker-compose.production.yml up -d
+              exit 1
+            fi
+            
+            # Prune old images
+            docker image prune -f
