@@ -1,0 +1,276 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  ADMIN
+  TEACHER
+  STUDENT
+}
+
+enum QuestionType {
+  MULTIPLE_CHOICE
+  TRUE_FALSE
+  SHORT_ANSWER
+}
+
+enum AssessmentStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  COMPLETED
+}
+
+enum LearningPlanStatus {
+  ACTIVE
+  COMPLETED
+  PAUSED
+}
+
+enum LearningPlanItemStatus {
+  PENDING
+  IN_PROGRESS
+  MASTERED
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String
+  name         String
+  role         UserRole @default(STUDENT)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  student Student?
+  teacher Teacher?
+
+  @@index([email])
+}
+
+model Student {
+  id               String   @id @default(uuid())
+  userId           String   @unique
+  gradeLevel       Int      @default(5)
+  targetGradeLevel Int      @default(6)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  user               User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  assessmentAttempts AssessmentAttempt[]
+  masteries          Mastery[]
+  learningPlans      LearningPlan[]
+  aiConversations    AiConversation[]
+}
+
+model Teacher {
+  id         String   @id @default(uuid())
+  userId     String   @unique
+  department String   @default("General Education")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subjects Subject[]
+}
+
+model Subject {
+  id          String   @id @default(uuid())
+  name        String
+  code        String   @unique
+  description String?
+  teacherId   String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  teacher     Teacher?     @relation(fields: [teacherId], references: [id], onDelete: SetNull)
+  chapters    Chapter[]
+  assessments Assessment[]
+}
+
+model Chapter {
+  id        String   @id @default(uuid())
+  name      String
+  order     Int      @default(1)
+  subjectId String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  subject Subject @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  topics  Topic[]
+}
+
+model Topic {
+  id        String   @id @default(uuid())
+  name      String
+  order     Int      @default(1)
+  chapterId String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  chapter  Chapter   @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  concepts Concept[]
+}
+
+model Concept {
+  id          String   @id @default(uuid())
+  name        String
+  code        String   @unique
+  description String?
+  topicId     String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  topic             Topic                 @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  prerequisites     ConceptPrerequisite[] @relation("TargetConcept")
+  prerequisiteFor   ConceptPrerequisite[] @relation("PrerequisiteConcept")
+  questions         Question[]
+  masteries         Mastery[]
+  learningPlanItems LearningPlanItem[]
+}
+
+model ConceptPrerequisite {
+  id             String   @id @default(uuid())
+  conceptId      String
+  prerequisiteId String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  concept      Concept @relation("TargetConcept", fields: [conceptId], references: [id], onDelete: Cascade)
+  prerequisite Concept @relation("PrerequisiteConcept", fields: [prerequisiteId], references: [id], onDelete: Cascade)
+
+  @@unique([conceptId, prerequisiteId])
+  @@index([conceptId])
+  @@index([prerequisiteId])
+}
+
+model Question {
+  id         String       @id @default(uuid())
+  conceptId  String
+  text       String
+  type       QuestionType @default(MULTIPLE_CHOICE)
+  options    Json?
+  answer     String
+  difficulty Int          @default(1)
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+
+  concept Concept @relation(fields: [conceptId], references: [id], onDelete: Cascade)
+}
+
+model Assessment {
+  id          String   @id @default(uuid())
+  title       String
+  description String?
+  subjectId   String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  subject  Subject             @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  attempts AssessmentAttempt[]
+}
+
+model AssessmentAttempt {
+  id           String           @id @default(uuid())
+  assessmentId String
+  studentId    String
+  score        Float?
+  status       AssessmentStatus @default(NOT_STARTED)
+  startedAt    DateTime         @default(now())
+  completedAt  DateTime?
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+
+  assessment Assessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  student    Student    @relation(fields: [studentId], references: [id], onDelete: Cascade)
+}
+
+model Mastery {
+  id        String   @id @default(uuid())
+  studentId String
+  conceptId String
+  score     Float    @default(0)
+  level     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  concept Concept @relation(fields: [conceptId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, conceptId])
+}
+
+model LearningPlan {
+  id        String             @id @default(uuid())
+  studentId String
+  title     String
+  status    LearningPlanStatus @default(ACTIVE)
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+
+  student Student            @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  items   LearningPlanItem[]
+}
+
+model LearningPlanItem {
+  id             String                 @id @default(uuid())
+  learningPlanId String
+  conceptId      String
+  order          Int                    @default(1)
+  status         LearningPlanItemStatus @default(PENDING)
+  targetDate     DateTime?
+  createdAt      DateTime               @default(now())
+  updatedAt      DateTime               @updatedAt
+
+  learningPlan LearningPlan @relation(fields: [learningPlanId], references: [id], onDelete: Cascade)
+  concept      Concept      @relation(fields: [conceptId], references: [id], onDelete: Cascade)
+}
+
+model AiConversation {
+  id        String   @id @default(uuid())
+  studentId String
+  title     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  student  Student     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  messages AiMessage[]
+}
+
+model AiMessage {
+  id             String   @id @default(uuid())
+  conversationId String
+  sender         String
+  content        String
+  metadata       Json?
+  createdAt      DateTime @default(now())
+
+  conversation AiConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+}
+
+model Document {
+  id        String   @id @default(uuid())
+  title     String
+  content   String
+  type      String   @default("text")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  chunks DocumentChunk[]
+}
+
+model DocumentChunk {
+  id         String   @id @default(uuid())
+  documentId String
+  content    String
+  chunkIndex Int
+  metadata   Json?
+  embedding  String?
+  createdAt  DateTime @default(now())
+
+  document Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+}

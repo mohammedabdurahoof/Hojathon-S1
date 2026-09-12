@@ -1,25 +1,20 @@
-# =========================================
-# Hojathon — Generic, stack-agnostic .gitignore
-# =========================================
-# This file protects against accidentally committing secrets and
-# common OS/editor junk. It does not assume any specific language,
-# framework, or tool. Add stack-specific rules for your own project
-# as needed inside your fork.
+# Node modules & build artifacts
+node_modules/
+dist/
+build/
+.next/
+out/
+coverage/
 
-# ---- Secrets & credentials ----
+# Environment files
 .env
-.env.*
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
 !.env.example
-*.pem
-*.key
-*.cert
-*.crt
-*secret*
-*credentials*
-*.p12
-*.pfx
 
-# ---- OS-generated files ----
+# OS & Editor junk
 .DS_Store
 .DS_Store?
 ._*
@@ -28,19 +23,19 @@
 ehthumbs.db
 Thumbs.db
 desktop.ini
-
-# ---- Editor / IDE metadata ----
 .vscode/
 .idea/
-*.sublime-project
-*.sublime-workspace
 *.swp
 *.swo
-*~
 
-# ---- Temporary / log files ----
+# Logs & temporary files
 *.log
 *.tmp
-*.temp
-*.bak
-*.cache
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Prisma & local SQLite/Postgres data if any
+prisma/*.db
+prisma/*.db-journal

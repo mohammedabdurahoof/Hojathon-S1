@@ -1,163 +1,185 @@
-# Hojathon
+# AI Remedial Learning Platform
 
-Build agents that don't just respond — they act.
+> Personalized learning that helps every student catch up and move forward.
 
-Hojathon is an agentic AI hackathon. Teams build systems that can reason, plan, call tools or APIs, and carry out multi-step tasks on their own — not just chatbots that answer a single prompt. This repository is the official starter and submission template: fork it, build your project inside your fork, and submit your final work back here through a Pull Request.
-
-There's no required stack. Build your agent with any language, any framework, any model provider or orchestration approach — LangChain, a custom agent loop, raw API calls, whatever gets the job done. This repo itself contains no code. It's just the structure and docs every team needs so judges can actually run and evaluate what you built.
+The **AI Remedial Learning Platform** is an AI-powered education system engineered for students who are academically behind their current grade level. By analyzing concept prerequisite relationships, the platform pinpoints root knowledge gaps and constructs tailored learning pathways.
 
 ---
 
-## Getting Started
+## 🏗️ Architecture & Core Learning Loop
 
-1. **Fork this repository** — click "Fork" at the top of this page, then click the green **"Create fork"** button on the page that follows to confirm.
-2. **Clone your fork** to your computer:
-   ```bash
-   git clone https://github.com/<your-username>/<your-fork>.git
-   ```
-3. **Read through this README and the [`docs/`](docs/) folder in full** before you write any code, so you understand the rules, the workflow, and what your final submission needs to include.
-4. **Add your teammates as collaborators** on your fork (GitHub → Settings → Collaborators) so everyone can push directly.
-5. **Build your project** inside your fork, using whatever stack fits your idea.
-6. **Commit and push regularly** — don't wait until the deadline to save your work.
-7. **Fill in the project documentation** (see [Project Documentation](#project-documentation) below and the [`docs/`](docs/) folder).
-8. **Open your final Pull Request** back to this repository before the deadline.
+```
+Student → Diagnostic Assessment → Knowledge Gap Detection → Prerequisite Analysis → Personalized Learning Plan → AI Tutor → Practice → Assessment → Mastery Update → Repeat
+```
+
+For detailed architectural specifications, see [docs/architecture/overview.md](docs/architecture/overview.md).
 
 ---
 
-## Team Information
+## 🛠️ Technology Stack
 
-Fill this in as soon as your team is formed.
-
-**Team ID:**
-
-**Team Name:**
-
-**Team Members:**
-
-1. Name
-2. Name
-3. Name
-
-**Project Name:**
-
-> Teams may have **1, 2, or 3 members**.
+| Layer | Technology | Description |
+| :--- | :--- | :--- |
+| **Frontend** | Next.js 14 (App Router) | React framework with TypeScript & Tailwind CSS |
+| **Backend** | NestJS | Node.js REST API framework with Swagger / OpenAPI |
+| **Database** | PostgreSQL + Prisma ORM | Relational schema with `pgvector` ready embeddings |
+| **Infrastructure** | Docker & Docker Compose | Containerized PostgreSQL 16 (`pgvector`) & Redis 7 |
+| **Task Queue** | Redis + BullMQ Ready | Asynchronous job processing architecture (`ai-processing`) |
+| **AI Layer** | Provider Abstraction | Agnostic `AIProvider` interface (OpenAI ready) |
+| **Testing** | Jest + Supertest | Unit & API integration testing |
+| **Monorepo** | npm Workspaces | Clean separation (`apps/web`, `apps/api`, `packages/*`) |
 
 ---
 
-## Project Documentation
+## 📁 Folder Structure
 
-Replace the placeholders below with your own project's details — this is what judges will actually read.
-
-### Project Name
-
-### Team
-
-### Problem Statement
-
-What problem are you solving, and why does it call for an agent rather than a static script or a plain UI?
-
-### Proposed Solution
-
-Explain your solution and how your agent approaches the problem.
-
-### Key Features
-
-* Feature 1
-* Feature 2
-* Feature 3
-
-### Technology Stack
-
-Describe whatever stack you chose. None of the categories below are required — leave out or add rows as needed.
-
-| Category | Technology |
-| -------- | ---------- |
-| Frontend |            |
-| Backend  |            |
-| Database |            |
-| AI/ML    |            |
-| APIs     |            |
-| Other    |            |
-
-### How It Works
-
-Explain your agent's architecture: what tools or APIs it can call, how it plans and decides what to do next, and what a full run through your system looks like. Add diagrams if they help.
-
-### Setup & Installation
-
-Replace this section with your project's actual setup instructions.
-
-### Running the Project
-
-Explain exactly how judges can run and use the project.
+```
+ai-remedial-learning/
+│
+├── apps/
+│   ├── web/                     # Next.js App Router Frontend
+│   │   ├── app/                 # Routes: /, /login, /dashboard, /student, /teacher, /admin
+│   │   ├── components/          # Header, Sidebar, DashboardLayout, Loading/Error/Empty States
+│   │   └── public/
+│   │
+│   └── api/                     # NestJS REST API Backend
+│       └── src/
+│           ├── auth/            # AuthModule
+│           ├── users/           # UsersModule
+│           ├── students/        # StudentsModule
+│           ├── teachers/        # TeachersModule
+│           ├── curriculum/      # CurriculumModule
+│           ├── concepts/        # ConceptsModule
+│           ├── assessments/     # AssessmentsModule
+│           ├── questions/       # QuestionsModule
+│           ├── mastery/         # MasteryModule
+│           ├── learning-plans/  # LearningPlansModule
+│           ├── ai/              # AiModule (AIProvider abstraction)
+│           ├── rag/             # RagModule (RAG vector foundation)
+│           ├── analytics/       # AnalyticsModule
+│           ├── notifications/   # NotificationsModule
+│           ├── health/          # HealthModule (GET /api/health)
+│           ├── common/          # Redis & BullMQ abstraction
+│           ├── prisma/          # PrismaService & PrismaModule
+│           ├── app.module.ts
+│           └── main.ts
+│
+├── packages/
+│   ├── shared/                  # Shared helpers & utilities
+│   ├── types/                   # Shared TypeScript interfaces & DTOs
+│   └── config/                  # Shared configurations
+│
+├── prisma/
+│   ├── schema.prisma            # 18 Core PostgreSQL domain models
+│   └── seed.ts                  # Demonstration dataset & Mathematics prerequisite tree
+│
+├── docker/
+│   └── postgres/                # init.sql (CREATE EXTENSION IF NOT EXISTS vector)
+│
+├── docs/
+│   ├── architecture/            # overview.md (Learning loop & prerequisite engine)
+│   ├── api/                     # API documentation
+│   └── decisions/
+│
+├── .env.example
+├── .gitignore
+├── docker-compose.yml
+├── package.json
+└── README.md
+```
 
 ---
 
-## Participant Rules
+## 💻 Requirements
 
-* Teams must contain **1–3 members**.
-* Teams may use **any technology stack**.
-* Teams should commit their work regularly.
-* Do **not** commit passwords, API keys, tokens, or other secrets.
-* The final state of the repository at the submission deadline will be considered for judging.
-* The final Pull Request must be submitted before the official deadline.
-* Participants are responsible for ensuring their project can be evaluated.
+- **Node.js**: `v20.x` or higher (tested on Node v24)
+- **npm**: `v10.x` or higher
+- **Docker & Docker Compose**: (for PostgreSQL with `pgvector` & Redis)
 
 ---
 
-## GitHub Workflow
+## 🚀 Installation & Setup
 
-```
-Official Hojathon Repository
-        ↓
-      Fork
-        ↓
-   Team's Fork
-        ↓
-  Build Project
-        ↓
-  Commit & Push
-        ↓
- Complete README
-        ↓
-   Final PR
-        ↓
-   Organizers
-        ↓
-    Judges
+### 1. Environment Setup
+
+Copy `.env.example` to `.env`:
+
+```bash
+cp .env.example .env
 ```
 
-Don't open a Pull Request for every change. Work normally inside your own fork, committing and pushing as often as you like — only open a Pull Request to the official repository when you're ready to make your **final submission**.
+### 2. Install Dependencies
+
+```bash
+npm install
+```
+
+### 3. Start Infrastructure Services (Docker)
+
+```bash
+docker-compose up -d
+```
+
+### 4. Database Setup (Prisma Migration & Seed)
+
+Generate Prisma client:
+```bash
+npm run db:generate
+```
+
+Run migrations (or push schema):
+```bash
+npm run db:migrate
+```
+
+Seed database with demonstration curriculum & prerequisite tree:
+```bash
+npm run db:seed
+```
 
 ---
 
-## Final Pull Request
+## 🏃 Running the Application
 
-When your project is ready, open a Pull Request from your fork's default branch into the official Hojathon repository.
-
-**PR title format:**
-
-```
-[TEAM-ID] Project Name
+### Start Both Frontend & Backend concurrently:
+```bash
+npm run dev
 ```
 
-**Example:**
+### Or start individually:
+- **Backend API (NestJS)**: `npm run dev:api` (Runs on `http://localhost:3001`)
+- **Frontend (Next.js)**: `npm run dev:web` (Runs on `http://localhost:3000`)
 
+---
+
+## 📖 API Documentation & Endpoints
+
+Swagger OpenAPI interface is interactive and automatically generated at:
+`http://localhost:3001/api/docs`
+
+### Health Check Endpoint:
+```http
+GET /api/health
 ```
-[TEAM-042] Smart Campus Assistant
+
+**Response:**
+```json
+{
+  "status": "ok",
+  "service": "ai-remedial-learning-api"
+}
 ```
 
-**The PR description must contain:**
+---
 
-* Team ID
-* Team name
-* Team members
-* Project name
-* Problem statement
-* Solution
-* Technology stack
-* Demo URL
-* Demo video
-* Special instructions for judges
+## 🤖 Future AI Architecture (Phase 2 Readiness)
 
-See [`docs/SUBMISSION.md`](docs/SUBMISSION.md) for the full submission checklist and process, and use the [Pull Request template](.github/PULL_REQUEST_TEMPLATE.md) when you open your final PR.
+The AI infrastructure is designed using a provider-agnostic abstraction (`AIProvider` interface):
+
+- **Text Generation**: `generateText(options)`
+- **Structured Output**: `generateStructuredOutput(options)`
+- **Vector Embedding**: `generateEmbedding(text)`
+- **RAG Pipeline**: Document chunking (`DocumentService`) and vector context querying (`RagService`).
+- **Async Queueing**: Redis and BullMQ queue registration (`ai-processing`).
+
+This ensures provider flexibility without coupling application logic directly to specific API vendors.
