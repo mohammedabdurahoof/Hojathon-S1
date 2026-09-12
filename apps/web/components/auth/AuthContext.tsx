@@ -20,6 +20,7 @@ interface AuthContextType {
   login: (email: string, password?: string, role?: UserRole) => Promise<boolean>;
   logout: () => void;
   switchRole: (role: UserRole) => void;
+  registerStudent: (name: string, email: string, grade: string) => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
