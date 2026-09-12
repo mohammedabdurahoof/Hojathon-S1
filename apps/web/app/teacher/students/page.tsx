@@ -16,7 +16,20 @@ interface Student {
   lastActive: string;
 }
 
-const STUDENTS: Student[] = [];
+const STUDENTS: Student[] = [
+  { id: 'std-1', name: 'Alex Johnson', email: 'alex.j@remedial.edu', grade: 'Grade 6', gap: 'Fractions Denominator Confusion', mastery: 42, status: 'CRITICAL', lastActive: '2 hours ago' },
+  { id: 'std-2', name: 'Sam Smith', email: 'sam.s@remedial.edu', grade: 'Grade 6', gap: 'Long Division Steps', mastery: 54, status: 'AT_RISK', lastActive: '1 day ago' },
+  { id: 'std-3', name: 'Maria Garcia', email: 'maria.g@remedial.edu', grade: 'Grade 6', gap: 'Decimal Place Value', mastery: 68, status: 'AT_RISK', lastActive: '3 hours ago' },
+  { id: 'std-4', name: 'Jordan Lee', email: 'jordan.l@remedial.edu', grade: 'Grade 6', gap: 'Multiplication Tables', mastery: 35, status: 'CRITICAL', lastActive: '5 hours ago' },
+  { id: 'std-5', name: 'Priya Patel', email: 'priya.p@remedial.edu', grade: 'Grade 7', gap: 'None', mastery: 88, status: 'MASTERED', lastActive: '30 mins ago' },
+  { id: 'std-6', name: 'Chris Thompson', email: 'chris.t@remedial.edu', grade: 'Grade 7', gap: 'Algebraic Expressions', mastery: 61, status: 'ON_TRACK', lastActive: '1 hour ago' },
+  { id: 'std-7', name: 'Aisha Mohammed', email: 'aisha.m@remedial.edu', grade: 'Grade 6', gap: 'Subtraction with Borrowing', mastery: 49, status: 'AT_RISK', lastActive: '2 days ago' },
+  { id: 'std-8', name: 'Ethan Williams', email: 'ethan.w@remedial.edu', grade: 'Grade 8', gap: 'None', mastery: 93, status: 'MASTERED', lastActive: '15 mins ago' },
+  { id: 'std-9', name: 'Sofia Rossi', email: 'sofia.r@remedial.edu', grade: 'Grade 7', gap: 'Ratio & Proportion', mastery: 72, status: 'ON_TRACK', lastActive: '4 hours ago' },
+  { id: 'std-10', name: 'Marcus Davis', email: 'marcus.d@remedial.edu', grade: 'Grade 6', gap: 'Place Value & Rounding', mastery: 38, status: 'CRITICAL', lastActive: '1 hour ago' },
+  { id: 'std-11', name: 'Yuki Tanaka', email: 'yuki.t@remedial.edu', grade: 'Grade 8', gap: 'Percentages', mastery: 75, status: 'ON_TRACK', lastActive: '6 hours ago' },
+  { id: 'std-12', name: 'Olivia Brown', email: 'olivia.b@remedial.edu', grade: 'Grade 5', gap: 'None', mastery: 91, status: 'MASTERED', lastActive: '20 mins ago' },
+];
 
 function statusBadge(status: Student['status']) {
   switch (status) {

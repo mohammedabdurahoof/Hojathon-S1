@@ -12,7 +12,24 @@ interface Concept {
   grade: string;
 }
 
-const INITIAL_CONCEPTS: Concept[] = [];
+const INITIAL_CONCEPTS: Concept[] = [
+  { code: 'ARITH-01', name: 'Counting & Number Sense', topic: 'Arithmetic', prerequisite: null, grade: 'Grade 4' },
+  { code: 'ARITH-02', name: 'Addition & Subtraction', topic: 'Arithmetic', prerequisite: 'ARITH-01', grade: 'Grade 4' },
+  { code: 'ARITH-03', name: 'Multiplication Tables', topic: 'Arithmetic', prerequisite: 'ARITH-02', grade: 'Grade 4' },
+  { code: 'ARITH-04', name: 'Long Division', topic: 'Arithmetic', prerequisite: 'ARITH-03', grade: 'Grade 5' },
+  { code: 'ARITH-05', name: 'Division with Remainders', topic: 'Arithmetic', prerequisite: 'ARITH-04', grade: 'Grade 5' },
+  { code: 'ARITH-06', name: 'Place Value & Rounding', topic: 'Arithmetic', prerequisite: 'ARITH-01', grade: 'Grade 4' },
+  { code: 'ARITH-07', name: 'Decimals & Decimal Operations', topic: 'Arithmetic', prerequisite: 'ARITH-06', grade: 'Grade 5' },
+  { code: 'FRAC-01', name: 'Introduction to Fractions', topic: 'Fractions', prerequisite: 'ARITH-03', grade: 'Grade 5' },
+  { code: 'FRAC-02', name: 'Equivalent Fractions', topic: 'Fractions', prerequisite: 'FRAC-01', grade: 'Grade 5' },
+  { code: 'FRAC-03', name: 'Adding & Subtracting Fractions', topic: 'Fractions', prerequisite: 'FRAC-02', grade: 'Grade 6' },
+  { code: 'FRAC-04', name: 'Multiplying Fractions', topic: 'Fractions', prerequisite: 'FRAC-03', grade: 'Grade 6' },
+  { code: 'FRAC-05', name: 'Dividing Fractions', topic: 'Fractions', prerequisite: 'FRAC-04', grade: 'Grade 6' },
+  { code: 'ALG-01', name: 'Introduction to Variables', topic: 'Algebra', prerequisite: 'ARITH-05', grade: 'Grade 7' },
+  { code: 'ALG-02', name: 'Algebraic Expressions', topic: 'Algebra', prerequisite: 'ALG-01', grade: 'Grade 7' },
+  { code: 'ALG-03', name: 'Solving Linear Equations', topic: 'Algebra', prerequisite: 'ALG-02', grade: 'Grade 8' },
+  { code: 'GEO-01', name: 'Angles & Triangles', topic: 'Geometry', prerequisite: null, grade: 'Grade 6' },
+];
 
 const TOPICS = ['Arithmetic', 'Fractions', 'Algebra', 'Geometry'];
 const GRADES = ['Grade 4', 'Grade 5', 'Grade 6', 'Grade 7', 'Grade 8'];

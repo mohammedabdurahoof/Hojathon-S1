@@ -13,8 +13,8 @@ function LoginForm() {
   const [activeMode, setActiveMode] = useState<'LOGIN' | 'REGISTER'>('LOGIN');
 
   // Sign In State
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState('student@remedial.edu');
+  const [password, setPassword] = useState('password123');
   const [selectedRole, setSelectedRole] = useState<UserRole>('STUDENT');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -22,11 +22,10 @@ function LoginForm() {
   const [regName, setRegName] = useState('');
   const [regEmail, setRegEmail] = useState('');
   const [regGrade, setRegGrade] = useState('Grade 6');
-  const [regPassword, setRegPassword] = useState('');
+  const [regPassword, setRegPassword] = useState('password123');
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email.trim()) return;
     setIsSubmitting(true);
 
     const success = await login(email, password, selectedRole);
@@ -53,6 +52,29 @@ function LoginForm() {
     if (success) {
       router.push('/student/assessment');
     }
+    setIsSubmitting(false);
+  };
+
+  const handleQuickDemo = async (role: UserRole) => {
+    setIsSubmitting(true);
+    const demoEmails: Record<UserRole, string> = {
+      ADMIN: 'admin@remedial.edu',
+      TEACHER: 'teacher@remedial.edu',
+      STUDENT: 'student@remedial.edu',
+      PARENT: 'parent@remedial.edu',
+    };
+
+    setSelectedRole(role);
+    setEmail(demoEmails[role]);
+
+    await login(demoEmails[role], 'password123', role);
+
+    if (role === 'ADMIN') router.push('/dashboard/admin');
+    else if (role === 'TEACHER') router.push('/dashboard/teacher');
+    else if (role === 'STUDENT') router.push('/dashboard/student');
+    else if (role === 'PARENT') router.push('/dashboard/parent');
+    else router.push('/dashboard');
+
     setIsSubmitting(false);
   };
 
@@ -90,7 +112,50 @@ function LoginForm() {
         </div>
 
         {activeMode === 'LOGIN' ? (
-          <form className="space-y-4" onSubmit={handleLogin}>
+          <>
+            {/* Quick Demo Access Buttons */}
+            <div className="mb-6 p-4 bg-slate-800/50 border border-slate-800 rounded-xl space-y-2">
+              <div className="text-[11px] font-bold text-slate-300 uppercase tracking-wider text-center">
+                ⚡ Quick Demo Access — Select Role Dashboard:
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => handleQuickDemo('ADMIN')}
+                  className="p-2.5 bg-rose-500/10 border border-rose-500/30 hover:bg-rose-500/20 text-rose-300 rounded-lg text-xs font-semibold transition text-center"
+                >
+                  👑 Admin Dashboard
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleQuickDemo('TEACHER')}
+                  className="p-2.5 bg-purple-500/10 border border-purple-500/30 hover:bg-purple-500/20 text-purple-300 rounded-lg text-xs font-semibold transition text-center"
+                >
+                  👩‍🏫 Teacher Dashboard
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleQuickDemo('STUDENT')}
+                  className="p-2.5 bg-indigo-500/10 border border-indigo-500/30 hover:bg-indigo-500/20 text-indigo-300 rounded-lg text-xs font-semibold transition text-center"
+                >
+                  👨‍🎓 Student Dashboard
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleQuickDemo('PARENT')}
+                  className="p-2.5 bg-emerald-500/10 border border-emerald-500/30 hover:bg-emerald-500/20 text-emerald-300 rounded-lg text-xs font-semibold transition text-center"
+                >
+                  👪 Parent Dashboard
+                </button>
+              </div>
+            </div>
+
+            <div className="relative my-6 text-center text-xs text-slate-500">
+              <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-slate-800"></div></div>
+              <span className="relative bg-slate-900 px-3">or sign in with credentials</span>
+            </div>
+
+            <form className="space-y-4" onSubmit={handleLogin}>
               <div>
                 <label className="block text-xs font-semibold text-slate-300 mb-1">Select Account Role</label>
                 <select
@@ -137,6 +202,7 @@ function LoginForm() {
                 {isSubmitting ? 'Signing In...' : `Sign In as ${selectedRole}`}
               </button>
             </form>
+          </>
         ) : (
           <form className="space-y-4" onSubmit={handleRegister}>
             <div className="p-3 bg-indigo-950/40 border border-indigo-500/30 rounded-xl text-xs text-indigo-300 flex items-center space-x-2">

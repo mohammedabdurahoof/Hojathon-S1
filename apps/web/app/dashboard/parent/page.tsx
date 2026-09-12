@@ -22,7 +22,55 @@ const CHILDREN_DATA: Record<string, {
   activities: ActivityItem[];
   teacherNote: string;
   weeklyReport: WeeklyReport;
-}> = {};
+}> = {
+  'Alex Johnson': {
+    name: 'Alex Johnson',
+    grade: 'Grade 6',
+    mastery: 58,
+    lessonsCompleted: 9,
+    alerts: 1,
+    activities: [
+      { title: 'AI Remedial: Division with Remainders', date: 'Today, 9:45 AM', status: 'IN_PROGRESS', detail: 'Step-by-step AI scaffolding — 4 of 6 exercises complete' },
+      { title: 'Diagnostic: Fractions Prerequisite Check', date: 'Yesterday, 2:10 PM', status: 'COMPLETED', detail: 'Identified gap in equivalent fractions — remediation triggered' },
+      { title: 'Practice: Long Division Drills', date: '2 days ago', status: 'MASTERED', detail: 'Scored 91% — concept marked mastered by AI engine' },
+      { title: 'AI Remedial: Place Value Review', date: '3 days ago', status: 'MASTERED', detail: 'Completed with 95% accuracy after 2 hint assists' },
+      { title: 'Assessment: Arithmetic Baseline', date: '1 week ago', status: 'COMPLETED', detail: 'Baseline mastery set at 42% — individualized plan created' },
+    ],
+    teacherNote: "Alex has shown meaningful improvement in long division but continues to struggle with fractions — particularly equivalent fractions and comparing denominators. The AI tutor has been activated with a customized scaffolding path. I recommend 15 minutes of focused practice nightly using the assigned lessons. Alex responds well to visual explanations and worked examples.",
+    weeklyReport: {
+      summary: "Alex completed 4 remedial practice sessions this week, achieving mastery in Long Division (91%) and Place Value (95%). Fractions remain the primary gap requiring continued AI-supported remediation. Overall mastery increased from 42% to 58% — a 16-point gain this week.",
+      highlights: [
+        'Mastered Long Division with Remainders (91% accuracy)',
+        'Completed Arithmetic Baseline Diagnostic',
+        'Showed 16% mastery improvement over 5 days',
+        'Active in AI Tutor — 4 sessions, avg. 18 min each',
+      ],
+      recommendation: "Focus the next week on Equivalent Fractions (Module 3). Alex benefits from visual comparison tools. Encourage use of the AI Tutor's fraction bar hints before attempting independent practice.",
+    },
+  },
+  'Sam Smith': {
+    name: 'Sam Smith',
+    grade: 'Grade 6',
+    mastery: 54,
+    lessonsCompleted: 6,
+    alerts: 1,
+    activities: [
+      { title: 'AI Remedial: Long Division Steps', date: 'Today, 11:00 AM', status: 'IN_PROGRESS', detail: 'Progressing through step-by-step breakdown — 3 of 5 done' },
+      { title: 'Diagnostic: Division Prerequisite Check', date: '2 days ago', status: 'COMPLETED', detail: 'Gap confirmed in multi-digit division steps' },
+      { title: 'Practice: Multiplication Review', date: '3 days ago', status: 'MASTERED', detail: 'Scored 87% on multiplication tables drill' },
+    ],
+    teacherNote: "Sam is making steady progress. Long division remains the primary focus. Consistent practice sessions are recommended.",
+    weeklyReport: {
+      summary: "Sam completed 3 sessions this week with notable improvement in multiplication. Division remediation is active and ongoing.",
+      highlights: [
+        'Mastered Multiplication Tables (87% accuracy)',
+        'Active remediation for Long Division Steps',
+        '8% mastery increase this week',
+      ],
+      recommendation: "Continue daily practice on long division. Focus on the 'divide, multiply, subtract, bring down' sequence using the AI Tutor hint system.",
+    },
+  },
+};
 
 const STATUS_COLOR: Record<ActivityItem['status'], string> = {
   IN_PROGRESS: 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30',

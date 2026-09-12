@@ -25,6 +25,34 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+const DEMO_USERS: Record<UserRole, User> = {
+  ADMIN: {
+    id: 'admin-001',
+    email: 'admin@remedial.edu',
+    name: 'Dr. Sarah Connor (Administrator)',
+    role: 'ADMIN',
+  },
+  TEACHER: {
+    id: 'teacher-001',
+    email: 'teacher@remedial.edu',
+    name: 'Prof. Marcus Vance (Math Department)',
+    role: 'TEACHER',
+  },
+  STUDENT: {
+    id: 'student-001',
+    email: 'student@remedial.edu',
+    name: 'Alex Johnson (Grade 6 Student)',
+    role: 'STUDENT',
+  },
+  PARENT: {
+    id: 'parent-001',
+    email: 'parent@remedial.edu',
+    name: 'Eleanor Johnson (Parent of Alex)',
+    role: 'PARENT',
+    studentId: 'student-001',
+  },
+};
+
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
@@ -59,20 +87,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         else role = 'STUDENT';
       }
 
-      const formattedName = email.split('@')[0].split('.').map((s) => s.charAt(0).toUpperCase() + s.slice(1)).join(' ');
-      const authenticatedUser: User = {
+      const selectedUser = DEMO_USERS[role] || {
         id: `usr-${Date.now()}`,
         email: email.trim(),
-        name: formattedName || 'Platform User',
+        name: email.split('@')[0].split('.').map((s) => s.charAt(0).toUpperCase() + s.slice(1)).join(' '),
         role,
       };
 
-      const sessionToken = `jwt_session_${authenticatedUser.role.toLowerCase()}_${Date.now()}`;
+      const sessionToken = `jwt_session_${selectedUser.role.toLowerCase()}_${Date.now()}`;
 
-      setUser(authenticatedUser);
+      setUser(selectedUser);
       setToken(sessionToken);
 
-      localStorage.setItem('remedial_user', JSON.stringify(authenticatedUser));
+      localStorage.setItem('remedial_user', JSON.stringify(selectedUser));
       localStorage.setItem('remedial_token', sessionToken);
 
       return true;
@@ -118,10 +145,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const switchRole = (role: UserRole) => {
-    if (!user) return;
-    const updatedUser: User = { ...user, role };
-    setUser(updatedUser);
-    localStorage.setItem('remedial_user', JSON.stringify(updatedUser));
+    const newUser = DEMO_USERS[role] || (user ? { ...user, role } : null);
+    if (newUser) {
+      setUser(newUser);
+      localStorage.setItem('remedial_user', JSON.stringify(newUser));
+    }
   };
 
   return (
