@@ -311,18 +311,65 @@ async function main() {
     },
   });
 
-  console.log('✅ Phase 3 Seeding completed successfully!');
-  console.log(`- Created Subject: ${subject.name} (${subject.code})`);
-  console.log(`- Created 7 Concepts: Addition -> Multiplication -> Division -> Fractions -> Decimals -> Percentages -> Algebra`);
-  console.log(`- Created ${allQuestions.length} Questions (5 per concept)`);
-  console.log(`- Created Diagnostic Assessment "${assessment.title}" with 14 attached questions`);
-  console.log(`- Seeded student "${studentUser.name}" with simulated Division (40%) and Fractions (36%) gaps`);
-  console.log(`- Created Active Remedial Plan "${plan.title}" targeting Fractions (36%)`);
+  // 10. Seed Phase 6 Teacher Intelligence Entities (ClassGroup, Enrollment, Intervention, TeacherAlert)
+  const classGroup = await prisma.classGroup.create({
+    data: {
+      name: 'Grade 8 Mathematics - Section A',
+      academicYear: '2026',
+      grade: 8,
+      section: 'A',
+      subjectId: subject.id,
+      teacherId: teacher.id,
+      status: 'ACTIVE',
+    },
+  });
+
+  await prisma.studentClassEnrollment.create({
+    data: {
+      studentId: student.id,
+      classGroupId: classGroup.id,
+    },
+  });
+
+  const intervention = await prisma.intervention.create({
+    data: {
+      teacherId: teacher.id,
+      classId: classGroup.id,
+      studentId: student.id,
+      conceptId: conceptFractions.id,
+      type: 'INDIVIDUAL_REMEDIATION',
+      reason: 'Student risk score is high due to root prerequisite gap in Fractions (35% mastery)',
+      recommendation: 'Assign 1-on-1 visual fraction breakdown and 5 practice exercises',
+      status: 'ASSIGNED',
+      priority: 'HIGH',
+      beforeMastery: 0.35,
+      targetMastery: 0.80,
+      practiceCount: 5,
+    },
+  });
+
+  const alert = await prisma.teacherAlert.create({
+    data: {
+      teacherId: teacher.id,
+      classId: classGroup.id,
+      studentId: student.id,
+      type: 'STUDENT_AT_RISK',
+      severity: 'HIGH',
+      title: 'Student At-Risk: Alex Johnson',
+      message: 'Alex Johnson is at high risk of falling behind in Algebra due to unresolved prerequisite gaps in Fractions and Decimals.',
+      status: 'UNREAD',
+    },
+  });
+
+  console.log('✅ Phase 6 Seeding completed successfully!');
+  console.log(`- Created ClassGroup: ${classGroup.name} (${classGroup.id})`);
+  console.log(`- Enrolled student ${student.id} in class ${classGroup.id}`);
+  console.log(`- Created Intervention ${intervention.id} and TeacherAlert ${alert.id}`);
 }
 
 main()
   .catch((e) => {
-    console.error('❌ Error seeding Phase 2 data:', e);
+    console.error('❌ Error seeding Phase 6 data:', e);
     process.exit(1);
   })
   .finally(async () => {

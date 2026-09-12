@@ -16,8 +16,11 @@ import { LearningPlansModule } from './learning-plans/learning-plans.module';
 import { AiModule } from './ai/ai.module';
 import { RagModule } from './rag/rag.module';
 import { StorageModule } from './storage/storage.module';
+import { AdaptiveModule } from './adaptive/adaptive.module';
 import { AnalyticsModule } from './analytics/analytics.module';
 import { NotificationsModule } from './notifications/notifications.module';
+import { TeacherIntelligenceModule } from './teacher-intelligence/teacher-intelligence.module';
+import { AssessmentEngineModule } from './assessment-engine/assessment-engine.module';
 
 @Module({
   imports: [
@@ -40,8 +43,11 @@ import { NotificationsModule } from './notifications/notifications.module';
     AiModule,
     RagModule,
     StorageModule,
+    AdaptiveModule,
     AnalyticsModule,
     NotificationsModule,
+    TeacherIntelligenceModule,
+    AssessmentEngineModule,
   ],
 })
 export class AppModule {}

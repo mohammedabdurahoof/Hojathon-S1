@@ -38,6 +38,10 @@ import { RagModule } from '../rag/rag.module';
     StudentContextService,
     CurriculumContentService,
     AiObservabilityService,
+    EvaluatorAgent,
+    PracticeAgent,
+    TutorAgent,
+    LessonAgent,
   ],
 })
 export class AiModule {}

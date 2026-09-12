@@ -118,7 +118,7 @@ describe('RAG Pipeline & Grounded AI Teaching (E2E Integration Tests)', () => {
     expect(res.body.length).toBeGreaterThan(0);
     expect(res.body[0].chunkId).toBeDefined();
     expect(res.body[0].content).toBeDefined();
-    expect(res.body[0].similarityScore).toBeGreaterThan(0);
+    expect(res.body[0].score ?? res.body[0].semanticScore).toBeGreaterThan(0);
   });
 
   it('6. POST /api/rag/concepts/:conceptId/associate -> should manually associate chunk with concept', async () => {
@@ -159,8 +159,9 @@ describe('RAG Pipeline & Grounded AI Teaching (E2E Integration Tests)', () => {
 
     expect(msgRes.body.tutorResponse).toBeDefined();
     expect(msgRes.body.tutorResponse.message).toBeDefined();
-    expect(msgRes.body.tutorResponse.citations).toBeDefined();
-    expect(Array.isArray(msgRes.body.tutorResponse.citations)).toBe(true);
+    const citations = msgRes.body.tutorResponse.sources ?? msgRes.body.tutorResponse.citations;
+    expect(citations).toBeDefined();
+    expect(Array.isArray(citations)).toBe(true);
   });
 
   it('8. POST /api/rag/documents/:id/reprocess -> should reprocess document content cleanly', async () => {

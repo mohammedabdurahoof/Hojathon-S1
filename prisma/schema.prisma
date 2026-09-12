@@ -17,6 +17,11 @@ enum QuestionType {
   MULTIPLE_CHOICE
   TRUE_FALSE
   SHORT_ANSWER
+  NUMERIC
+  FREE_TEXT
+  MATCHING
+  ORDERING
+  MULTI_SELECT
 }
 
 enum AssessmentPurpose {
@@ -24,6 +29,57 @@ enum AssessmentPurpose {
   PRACTICE
   REMEDIAL
   FINAL
+  ADAPTIVE
+  REASSESSMENT
+  SUMMATIVE
+  TEACHER_CREATED
+  MASTERY_CHECK
+  TRANSFER_ASSESSMENT
+}
+
+enum QuestionStatus {
+  DRAFT
+  REVIEW
+  APPROVED
+  PUBLISHED
+  RETIRED
+}
+
+enum QuestionSource {
+  TEACHER
+  AI
+  IMPORTED
+}
+
+enum QuestionObjective {
+  RECALL
+  UNDERSTANDING
+  PROCEDURAL
+  APPLICATION
+  TRANSFER
+  REASONING
+}
+
+enum BlueprintStatus {
+  DRAFT
+  READY
+  PUBLISHED
+  ARCHIVED
+}
+
+enum AssessmentAttemptState {
+  NOT_STARTED
+  IN_PROGRESS
+  PAUSED
+  COMPLETED
+  EXPIRED
+  ABANDONED
+}
+
+enum EvaluatedBy {
+  RULE_ENGINE
+  AI
+  TEACHER
 }
 
 enum AssessmentStatus {
@@ -41,7 +97,11 @@ enum LearningPlanStatus {
 enum LearningPlanItemStatus {
   PENDING
   IN_PROGRESS
+  REMEDIATION
+  REVIEW
+  REASSESSMENT
   MASTERED
+  BLOCKED
 }
 
 enum MessageRole {
@@ -100,6 +160,16 @@ model Student {
   aiConversations    AiConversation[]
   misconceptionLogs  MisconceptionLog[]
   aiInteractionLogs  AiInteractionLog[]
+  masteryEvidences   MasteryEvidence[]
+  masteryHistories   MasteryHistory[]
+  misconceptions     Misconception[]
+  reviewSchedules    ReviewSchedule[]
+  questionExposures  QuestionExposure[]
+  learningEvents     LearningEvent[]
+  adaptiveSessions   AdaptiveSession[]
+  classEnrollments   StudentClassEnrollment[]
+  interventions      Intervention[]
+  teacherAlerts      TeacherAlert[]
 }
 
 model Teacher {
@@ -109,8 +179,11 @@ model Teacher {
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
-  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  subjects Subject[]
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subjects      Subject[]
+  classes       ClassGroup[]
+  interventions Intervention[]
+  alerts        TeacherAlert[]
 }
 
 model Subject {
@@ -122,10 +195,13 @@ model Subject {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  teacher     Teacher?     @relation(fields: [teacherId], references: [id], onDelete: SetNull)
+  teacher     Teacher?              @relation(fields: [teacherId], references: [id], onDelete: SetNull)
   chapters    Chapter[]
   assessments Assessment[]
   documents   Document[]
+  classes     ClassGroup[]
+  blueprints  AssessmentBlueprint[]
+  questions   Question[]
 }
 
 model Chapter {
@@ -172,6 +248,14 @@ model Concept {
   aiConversations    AiConversation[]
   misconceptionLogs  MisconceptionLog[]
   curriculumContents CurriculumContent[]
+  masteryEvidences   MasteryEvidence[]
+  masteryHistories   MasteryHistory[]
+  misconceptions     Misconception[]
+  reviewSchedules    ReviewSchedule[]
+  questionExposures  QuestionExposure[]
+  adaptiveSessions   AdaptiveSession[]
+  interventions      Intervention[]
+  assessmentConcepts AssessmentConcept[]
 }
 
 model ConceptPrerequisite {
@@ -190,22 +274,112 @@ model ConceptPrerequisite {
 }
 
 model Question {
-  id          String       @id @default(uuid())
-  conceptId   String
-  text        String
-  type        QuestionType @default(MULTIPLE_CHOICE)
-  difficulty  Int          @default(3)
-  options     Json?
-  answer      String
-  explanation String?
-  metadata    Json?
-  isActive    Boolean      @default(true)
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
+  id                      String            @id @default(uuid())
+  conceptId               String
+  subjectId               String?
+  text                    String
+  type                    QuestionType      @default(MULTIPLE_CHOICE)
+  difficulty              Int               @default(3)
+  objective               QuestionObjective @default(RECALL)
+  options                 Json?
+  answer                  String
+  explanation             String?
+  marks                   Float             @default(1.0)
+  estimatedTimeSeconds    Int               @default(60)
+  source                  QuestionSource    @default(TEACHER)
+  status                  QuestionStatus    @default(PUBLISHED)
+  createdBy               String?
+  aiGenerated             Boolean           @default(false)
+  qualityScore            Float?
+  distractorMisconceptions Json?
+  sourceMetadata          Json?
+  metadata                Json?
+  isActive                Boolean           @default(true)
+  createdAt               DateTime          @default(now())
+  updatedAt               DateTime          @updatedAt
 
   concept             Concept              @relation(fields: [conceptId], references: [id], onDelete: Cascade)
+  subject             Subject?             @relation(fields: [subjectId], references: [id], onDelete: SetNull)
   assessmentQuestions AssessmentQuestion[]
   responses           AssessmentResponse[]
+  versions            QuestionVersion[]
+  statistics          QuestionStatistics?
+  answers             AssessmentAnswer[]
+
+  @@index([conceptId, difficulty, status])
+}
+
+model QuestionVersion {
+  id                     String    @id @default(uuid())
+  questionId             String
+  version                Int       @default(1)
+  text                   String
+  options                Json?
+  correctAnswer          String
+  explanation            String?
+  difficulty             Int       @default(3)
+  distractorMisconceptions Json?
+  createdAt              DateTime  @default(now())
+
+  question Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@unique([questionId, version])
+}
+
+model QuestionStatistics {
+  id                   String   @id @default(uuid())
+  questionId           String   @unique
+  attempts             Int      @default(0)
+  correctAttempts      Int      @default(0)
+  incorrectAttempts    Int      @default(0)
+  accuracy             Float    @default(0.0)
+  averageResponseTimeMs Float   @default(0.0)
+  discriminationIndex  Float?
+  lastCalculatedAt     DateTime @default(now())
+
+  question Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@index([questionId])
+}
+
+model AssessmentBlueprint {
+  id                       String            @id @default(uuid())
+  title                    String
+  subjectId                String
+  targetGrade              Int               @default(8)
+  purpose                  AssessmentPurpose @default(DIAGNOSTIC)
+  durationMinutes          Int               @default(30)
+  totalQuestions           Int               @default(20)
+  totalMarks               Float             @default(100.0)
+  passingScore             Float?
+  conceptDistribution      Json
+  difficultyDistribution   Json
+  questionTypeDistribution Json?
+  objectiveDistribution    Json?
+  createdBy                String
+  status                   BlueprintStatus   @default(DRAFT)
+  createdAt                DateTime          @default(now())
+  updatedAt                DateTime          @updatedAt
+
+  subject     Subject      @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  assessments Assessment[]
+}
+
+model AssessmentConcept {
+  id               String   @id @default(uuid())
+  assessmentId     String
+  conceptId        String
+  questionTarget   Int      @default(1)
+  marksTarget      Float?
+  minimumQuestions Int      @default(1)
+  maximumQuestions Int?
+  createdAt        DateTime @default(now())
+
+  assessment Assessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  concept    Concept    @relation(fields: [conceptId], references: [id], onDelete: Cascade)
+
+  @@unique([assessmentId, conceptId])
+  @@index([assessmentId, conceptId])
 }
 
 model Assessment {
@@ -213,15 +387,22 @@ model Assessment {
   title       String
   description String?
   subjectId   String
+  blueprintId String?
   targetGrade Int               @default(8)
   purpose     AssessmentPurpose @default(DIAGNOSTIC)
   duration    Int               @default(30)
+  totalMarks  Float             @default(100.0)
+  passingScore Float?
+  isAdaptive  Boolean           @default(false)
+  adaptiveConfig Json?
   isActive    Boolean           @default(true)
   createdAt   DateTime          @default(now())
   updatedAt   DateTime          @updatedAt
 
   subject   Subject              @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  blueprint AssessmentBlueprint? @relation(fields: [blueprintId], references: [id], onDelete: SetNull)
   questions AssessmentQuestion[]
+  concepts  AssessmentConcept[]
   attempts  AssessmentAttempt[]
 }
 
@@ -239,23 +420,31 @@ model AssessmentQuestion {
 }
 
 model AssessmentAttempt {
-  id               String           @id @default(uuid())
-  assessmentId     String
-  studentId        String
-  score            Float?
-  percentage       Float?
-  totalQuestions   Int              @default(0)
-  correctAnswers   Int              @default(0)
-  incorrectAnswers Int              @default(0)
-  status           AssessmentStatus @default(IN_PROGRESS)
-  startedAt        DateTime         @default(now())
-  completedAt      DateTime?
-  createdAt        DateTime         @default(now())
-  updatedAt        DateTime         @updatedAt
+  id                       String                 @id @default(uuid())
+  assessmentId             String
+  studentId                String
+  score                    Float?
+  percentage               Float?
+  totalQuestions           Int                    @default(0)
+  correctAnswers           Int                    @default(0)
+  incorrectAnswers         Int                    @default(0)
+  status                   AssessmentStatus       @default(IN_PROGRESS)
+  state                    AssessmentAttemptState @default(IN_PROGRESS)
+  adaptiveState            Json?
+  conceptsCovered          Json?
+  estimatedMasteryByConcept Json?
+  confidenceByConcept      Json?
+  startedAt                DateTime               @default(now())
+  completedAt              DateTime?
+  createdAt                DateTime               @default(now())
+  updatedAt                DateTime               @updatedAt
 
   assessment Assessment           @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
   student    Student              @relation(fields: [studentId], references: [id], onDelete: Cascade)
   responses  AssessmentResponse[]
+  answers    AssessmentAnswer[]
+
+  @@index([studentId, assessmentId])
 }
 
 model AssessmentResponse {
@@ -269,6 +458,40 @@ model AssessmentResponse {
 
   attempt  AssessmentAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
   question Question          @relation(fields: [questionId], references: [id], onDelete: Cascade)
+}
+
+model AssessmentAnswer {
+  id                String      @id @default(uuid())
+  attemptId         String
+  questionId        String
+  questionVersionId String?
+  answer            String
+  isCorrect         Boolean
+  score             Float       @default(0.0)
+  responseTimeMs    Int         @default(0)
+  hintsUsed         Int         @default(0)
+  evaluatedBy       EvaluatedBy @default(RULE_ENGINE)
+  misconception     String?
+  createdAt         DateTime    @default(now())
+
+  attempt  AssessmentAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  question Question          @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@index([attemptId, questionId])
+}
+
+model InterventionAssessmentComparison {
+  id                 String              @id @default(uuid())
+  interventionId     String
+  conceptId          String
+  beforeAssessmentId String?
+  beforeScore        Float
+  afterAssessmentId  String?
+  afterScore         Float
+  improvement        Float
+  confidenceChange   Float?
+  outcome            InterventionOutcome @default(SUCCESSFUL)
+  createdAt          DateTime            @default(now())
 }
 
 model Mastery {
@@ -438,3 +661,345 @@ model CurriculumContent {
 
   @@unique([conceptId, documentChunkId])
 }
+
+enum EvidenceSource {
+  DIAGNOSTIC
+  PRACTICE
+  TUTOR
+  REMEDIAL
+  ASSESSMENT
+  AI_EVALUATION
+}
+
+enum MasteryHistoryReason {
+  INITIAL_ASSESSMENT
+  CORRECT_ANSWER
+  INCORRECT_ANSWER
+  REMEDIAL_SUCCESS
+  REMEDIAL_FAILURE
+  ASSESSMENT_RESULT
+  MANUAL_ADJUSTMENT
+}
+
+enum MisconceptionCategory {
+  ARITHMETIC_ERROR
+  SIGN_ERROR
+  PLACE_VALUE_ERROR
+  FRACTION_DENOMINATOR_ERROR
+  FRACTION_NUMERATOR_ERROR
+  UNIT_CONVERSION_ERROR
+  FORMULA_RECALL_ERROR
+  CONCEPT_CONFUSION
+  PREREQUISITE_GAP
+  PROCEDURAL_ERROR
+  READING_COMPREHENSION_ERROR
+  CARELESS_ERROR
+  UNKNOWN
+}
+
+enum LearningRecommendationType {
+  CONTINUE
+  PRACTICE
+  REMEDIATE
+  REVIEW_PREREQUISITE
+  REASSESS
+  ADVANCE
+  REVIEW_LATER
+}
+
+enum AdaptiveSessionStatus {
+  STARTED
+  DIAGNOSING
+  TEACHING
+  PRACTICING
+  REMEDIATING
+  REASSESSING
+  COMPLETED
+}
+
+enum LearningEventType {
+  QUESTION_SHOWN
+  QUESTION_ANSWERED
+  HINT_REQUESTED
+  MISCONCEPTION_DETECTED
+  MASTERY_UPDATED
+  CONCEPT_MASTERED
+  REMEDIATION_STARTED
+  REASSESSMENT_STARTED
+  REVIEW_SCHEDULED
+  REVIEW_COMPLETED
+  CONCEPT_REGRESSED
+}
+
+enum QuestionObjectiveType {
+  RECALL
+  PROCEDURAL
+  APPLICATION
+  TRANSFER
+}
+
+model MasteryEvidence {
+  id                   String         @id @default(uuid())
+  studentId            String
+  conceptId            String
+  assessmentAttemptId String?
+  questionId           String?
+  source               EvidenceSource @default(PRACTICE)
+  correctness          Boolean
+  score                Float          @default(0)
+  difficulty           Int            @default(1)
+  responseTimeMs       Int?
+  hintsUsed            Int            @default(0)
+  attemptNumber        Int            @default(1)
+  misconception        String?
+  confidence           Float          @default(0.5)
+  createdAt            DateTime       @default(now())
+
+  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  concept Concept @relation(fields: [conceptId], references: [id], onDelete: Cascade)
+}
+
+model MasteryHistory {
+  id            String               @id @default(uuid())
+  studentId     String
+  conceptId     String
+  previousScore Float
+  newScore      Float
+  reason        MasteryHistoryReason @default(CORRECT_ANSWER)
+  evidenceId    String?
+  createdAt     DateTime             @default(now())
+
+  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  concept Concept @relation(fields: [conceptId], references: [id], onDelete: Cascade)
+}
+
+model Misconception {
+  id              String                @id @default(uuid())
+  studentId       String
+  conceptId       String
+  category        MisconceptionCategory @default(UNKNOWN)
+  description     String
+  confidence      Float                 @default(0.8)
+  occurrenceCount Int                   @default(1)
+  resolved        Boolean               @default(false)
+  firstDetectedAt DateTime              @default(now())
+  lastDetectedAt  DateTime              @default(now())
+
+  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  concept Concept @relation(fields: [conceptId], references: [id], onDelete: Cascade)
+}
+
+model ReviewSchedule {
+  id             String    @id @default(uuid())
+  studentId      String
+  conceptId      String
+  nextReviewAt   DateTime
+  intervalDays   Int       @default(1)
+  reviewCount    Int       @default(0)
+  lastReviewedAt DateTime?
+  status         String    @default("PENDING")
+  createdAt      DateTime  @default(now())
+
+  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  concept Concept @relation(fields: [conceptId], references: [id], onDelete: Cascade)
+}
+
+model QuestionExposure {
+  id         String    @id @default(uuid())
+  studentId  String
+  questionId String
+  conceptId  String
+  shownAt    DateTime  @default(now())
+  answeredAt DateTime?
+  result     String?
+
+  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  concept Concept @relation(fields: [conceptId], references: [id], onDelete: Cascade)
+}
+
+model LearningEvent {
+  id        String            @id @default(uuid())
+  studentId String
+  conceptId String?
+  eventType LearningEventType
+  metadata  Json?
+  createdAt DateTime          @default(now())
+
+  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+}
+
+model AdaptiveSession {
+  id                String                     @id @default(uuid())
+  studentId         String
+  learningPlanId    String?
+  conceptId         String
+  currentDifficulty Int                        @default(1)
+  status            AdaptiveSessionStatus      @default(STARTED)
+  recommendedAction LearningRecommendationType @default(PRACTICE)
+  createdAt         DateTime                   @default(now())
+  updatedAt         DateTime                   @updatedAt
+
+  student Student               @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  concept Concept               @relation(fields: [conceptId], references: [id], onDelete: Cascade)
+  turns   AdaptiveSessionTurn[]
+}
+
+model AdaptiveSessionTurn {
+  id            String   @id @default(uuid())
+  sessionId     String
+  questionId    String?
+  questionText  String?
+  studentAnswer String?
+  isCorrect     Boolean?
+  score         Float?
+  misconception String?
+  hint          String?
+  nextAction    String?
+  createdAt     DateTime @default(now())
+
+  session AdaptiveSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+}
+
+enum ClassGroupStatus {
+  ACTIVE
+  ARCHIVED
+}
+
+enum RiskLevel {
+  ON_TRACK
+  WATCH
+  AT_RISK
+  CRITICAL
+}
+
+enum InterventionType {
+  INDIVIDUAL_REMEDIATION
+  GROUP_REMEDIATION
+  PREREQUISITE_REVIEW
+  ADDITIONAL_PRACTICE
+  TEACHER_EXPLANATION
+  ASSESSMENT
+  REVIEW
+  PEER_SUPPORT
+  CURRICULUM_REVIEW
+}
+
+enum InterventionStatus {
+  RECOMMENDED
+  ASSIGNED
+  IN_PROGRESS
+  COMPLETED
+  DISMISSED
+}
+
+enum InterventionOutcome {
+  SUCCESSFUL
+  PARTIALLY_SUCCESSFUL
+  UNSUCCESSFUL
+  INCONCLUSIVE
+}
+
+enum AlertSeverity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum AlertType {
+  STUDENT_AT_RISK
+  STUDENT_CRITICAL
+  CLASS_BOTTLENECK
+  MISCONCEPTION_CLUSTER
+  MASTERY_REGRESSION
+  REMEDIATION_FAILURE
+  REVIEW_OVERDUE
+  INTERVENTION_NEEDED
+}
+
+enum AlertStatus {
+  UNREAD
+  READ
+  RESOLVED
+  DISMISSED
+}
+
+model ClassGroup {
+  id           String           @id @default(uuid())
+  name         String
+  academicYear String           @default("2026")
+  grade        Int              @default(8)
+  section      String?
+  subjectId    String?
+  teacherId    String
+  status       ClassGroupStatus @default(ACTIVE)
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+
+  teacher       Teacher                  @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  subject       Subject?                 @relation(fields: [subjectId], references: [id], onDelete: SetNull)
+  enrollments   StudentClassEnrollment[]
+  interventions Intervention[]
+  alerts        TeacherAlert[]
+}
+
+model StudentClassEnrollment {
+  id           String   @id @default(uuid())
+  studentId    String
+  classGroupId String
+  joinedAt     DateTime @default(now())
+
+  student    Student    @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  classGroup ClassGroup @relation(fields: [classGroupId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, classGroupId])
+}
+
+model Intervention {
+  id            String               @id @default(uuid())
+  teacherId     String
+  classId       String?
+  studentId     String?
+  conceptId     String?
+  type          InterventionType     @default(INDIVIDUAL_REMEDIATION)
+  reason        String
+  recommendation String?
+  status        InterventionStatus   @default(ASSIGNED)
+  priority      AlertSeverity        @default(MEDIUM)
+  beforeMastery Float?
+  afterMastery  Float?
+  outcome       InterventionOutcome?
+  targetMastery Float?               @default(0.80)
+  practiceCount Int?                 @default(5)
+  teacherNotes  String?
+  startedAt     DateTime?
+  completedAt   DateTime?
+  createdAt     DateTime             @default(now())
+  updatedAt     DateTime             @updatedAt
+
+  teacher    Teacher     @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  classGroup ClassGroup? @relation(fields: [classId], references: [id], onDelete: SetNull)
+  student    Student?    @relation(fields: [studentId], references: [id], onDelete: SetNull)
+  concept    Concept?    @relation(fields: [conceptId], references: [id], onDelete: SetNull)
+}
+
+model TeacherAlert {
+  id         String        @id @default(uuid())
+  teacherId  String
+  studentId  String?
+  classId    String?
+  type       AlertType
+  severity   AlertSeverity @default(HIGH)
+  title      String
+  message    String
+  metadata   Json?
+  status     AlertStatus   @default(UNREAD)
+  createdAt  DateTime      @default(now())
+  resolvedAt DateTime?
+
+  teacher    Teacher     @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  student    Student?    @relation(fields: [studentId], references: [id], onDelete: SetNull)
+  classGroup ClassGroup? @relation(fields: [classId], references: [id], onDelete: SetNull)
+}
+
+
